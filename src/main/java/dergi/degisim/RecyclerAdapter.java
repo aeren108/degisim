@@ -46,7 +46,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         into(newsViewHolder.img);
 
         if (position >= getItemCount() - 1) {
-            scrollListener.onScrollBottom(getItemCount() - 1);
+            scrollListener.onScrollBottom(getItemCount());
         }
     }
 
@@ -59,11 +59,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         this.news = news;
     }
 
-    public void addNews(News n) {
+    /*public void addNews(News n) {
         news.add(n);
-    }
-
-
+    }*/
 
     class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView title;

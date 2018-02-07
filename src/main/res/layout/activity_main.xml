@@ -2,22 +2,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <include
         layout="@layout/content_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ListView
-        android:id="@+id/drawer_list"
-        android:layout_width="250dp"
+    <LinearLayout
+        android:layout_width="270dp"
         android:layout_height="match_parent"
-        android:paddingTop="50dp"
-        android:background="#474747"
-        android:layout_gravity="left">
-    </ListView>
+        android:orientation="vertical"
+        android:layout_gravity="left"
+        android:background="#f7f7f7">
+
+        <LinearLayout
+            android:id="@+id/drawer_linear"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:orientation="vertical"
+            android:background="@drawable/materialdesign_introduction">
+
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/drawer_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="15dp"
+            android:choiceMode="singleChoice">
+        </ListView>
+
+    </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>
 

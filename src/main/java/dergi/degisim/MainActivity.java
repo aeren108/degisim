@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                drawer.closeDrawer(itemList);
+                drawer.closeDrawers();
             }
         });
 

@@ -97,6 +97,8 @@ public class HomeFragment extends Fragment {
             @Override
             public void onScrollBottom(int bottomItem) {
                 loadMore(bottomItem);
+                rv.invalidate();
+                rv.invalidateItemDecorations();
             }
         });
 
@@ -190,10 +192,10 @@ public class HomeFragment extends Fragment {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
 
-                    if ((start + 1) >= task.getResult().getDocuments().size())
+                    if ((start) >= task.getResult().getDocuments().size())
                         return;
 
-                    DocumentSnapshot ds = task.getResult().getDocuments().get(start + 1);
+                    DocumentSnapshot ds = task.getResult().getDocuments().get(start);
 
                     News n = new News();
                     n.setTitle(ds.getString("header"));
@@ -201,14 +203,15 @@ public class HomeFragment extends Fragment {
                     n.setPath(ds.getString("img"));
                     n.formatContent();
 
-                    adapter.addNews(n);
+                    items.add(n);
+                    adapter.setNews(items);
+                    rv.invalidate();
+                    rv.invalidateItemDecorations();
 
-                    fetchImage(n, start + 1, false);
+                    fetchImage(n, start, false);
                     Log.d("FIRESTORE INFO", n.toString());
                     Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
-                    Log.d("SCROLL INFO", String.valueOf(start +1));
-
-                    rv.invalidate();
+                    Log.d("SCROLL INFO", String.valueOf(start));
                 } else
                     throw new RuntimeException("Datas couldn't got received, check your internet connection.");
             }
