@@ -22,12 +22,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
     private ItemClickListener clickListener;
 
     private final Context context;
-    private OnScrollListener scrollListener;
 
-    public RecyclerAdapter(Context context, ItemClickListener clickListener, OnScrollListener scrollListener) {
+    public RecyclerAdapter(Context context, ItemClickListener clickListener) {
         this.context = context;
         this.clickListener = clickListener;
-        this.scrollListener = scrollListener;
     }
 
     @Override
@@ -44,10 +42,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         resize(980, 660).
         noFade().
         into(newsViewHolder.img);
-
-        if (position >= getItemCount() - 1) {
-            scrollListener.onScrollBottom(getItemCount());
-        }
     }
 
     @Override
@@ -59,9 +53,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         this.news = news;
     }
 
-    /*public void addNews(News n) {
+    public void addNews(News n) {
         news.add(n);
-    }*/
+    }
 
     class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView title;

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,16 +30,18 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
-import dergi.degisim.OnScrollListener;
 import dergi.degisim.news.NewsPaper;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.news.News;
 import dergi.degisim.ItemClickListener;
 
+import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
+
 public class HomeFragment extends Fragment {
     private RecyclerView rv;
     private RecyclerAdapter adapter;
+    LinearLayoutManager m;
 
     private FirebaseStorage storage;
 
@@ -47,6 +50,8 @@ public class HomeFragment extends Fragment {
 
     public static final int NEWS_AMOUNT = 3;
     public static boolean FETCHED = false;
+
+    public boolean isScrolling = false;
 
     public HomeFragment() {
 
@@ -75,7 +80,7 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        LinearLayoutManager m = new LinearLayoutManager(getContext());
+        m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
         adapter = new RecyclerAdapter(getActivity(), new ItemClickListener() {
 
@@ -88,18 +93,6 @@ public class HomeFragment extends Fragment {
                 intent.putExtra("uri", items.get(pos).getUri().toString());
                 startActivity(intent);
             }
-        }, new OnScrollListener() {
-            @Override
-            public void onScroll() {
-
-            }
-
-            @Override
-            public void onScrollBottom(int bottomItem) {
-                loadMore(bottomItem);
-                rv.invalidate();
-                rv.invalidateItemDecorations();
-            }
         });
 
         storage = FirebaseStorage.getInstance();
@@ -110,6 +103,32 @@ public class HomeFragment extends Fragment {
         rv.setDrawingCacheEnabled(true);
         rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         rv.invalidate();
+
+        rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == SCROLL_STATE_TOUCH_SCROLL)
+                    isScrolling = true;
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int totalItems = m.getItemCount();
+                int visibleItems = m.getChildCount();
+                int outItems = m.findFirstVisibleItemPosition();
+
+                if (isScrolling && (visibleItems + outItems) == totalItems) {
+                    loadMore(totalItems);
+                    isScrolling = false;
+                }
+
+                rv.invalidateItemDecorations();
+                rv.invalidate();
+            }
+        });
 
         if (!FETCHED) {
             items = new ArrayList<>();
@@ -161,7 +180,7 @@ public class HomeFragment extends Fragment {
                 Log.d("STORAGE INFO", "Got the URI for:" + n.getPath());
                 Log.d("STORAGE INFO", "URI:" + uri.toString());
 
-                if (firstFetch ) {
+                if (firstFetch) {
                     adapter.setNews(items);
                     rv.setAdapter(adapter);
 
@@ -186,34 +205,37 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadMore(final int start) {
-        FirebaseFirestore fs = FirebaseFirestore.getInstance();
-        fs.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        new Handler().post(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
+            public void run() {
+                FirebaseFirestore fs = FirebaseFirestore.getInstance();
+                fs.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
 
-                    if ((start) >= task.getResult().getDocuments().size())
-                        return;
+                        if ((start) >= task.getResult().getDocuments().size())
+                            return;
 
-                    DocumentSnapshot ds = task.getResult().getDocuments().get(start);
+                        DocumentSnapshot ds = task.getResult().getDocuments().get(start);
 
-                    News n = new News();
-                    n.setTitle(ds.getString("header"));
-                    n.setContent(ds.getString("content"));
-                    n.setPath(ds.getString("img"));
-                    n.formatContent();
+                        News n = new News();
+                        n.setTitle(ds.getString("header"));
+                        n.setContent(ds.getString("content"));
+                        n.setPath(ds.getString("img"));
+                        n.formatContent();
 
-                    items.add(n);
-                    adapter.setNews(items);
-                    rv.invalidate();
-                    rv.invalidateItemDecorations();
+                        adapter.addNews(n);
+                        rv.invalidate();
 
-                    fetchImage(n, start, false);
-                    Log.d("FIRESTORE INFO", n.toString());
-                    Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
-                    Log.d("SCROLL INFO", String.valueOf(start));
-                } else
-                    throw new RuntimeException("Datas couldn't got received, check your internet connection.");
+                        fetchImage(n, start, false);
+                        Log.d("FIRESTORE INFO", n.toString());
+                        Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
+                        Log.d("SCROLL INFO", String.valueOf(start));
+                    } else
+                        throw new RuntimeException("Datas couldn't got received, check your internet connection.");
+                    }
+                });
             }
         });
     }

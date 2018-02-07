@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">degisim_dergisi</string>
+    <string name="app_name">Değişim Dergisi</string>
 
     <!-- BottomNavigationView Items -->
     <string name="title_home">Ana Sayfa</string>
