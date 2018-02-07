@@ -46,7 +46,6 @@ public class HomeFragment extends Fragment {
     private FirebaseStorage storage;
 
     private static ArrayList<News> items;
-    private boolean end = false;
 
     public static final int NEWS_AMOUNT = 3;
     public static boolean FETCHED = false;
@@ -95,15 +94,6 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        storage = FirebaseStorage.getInstance();
-
-        rv.setHasFixedSize(true);
-        rv.setLayoutManager(m);
-        rv.setItemViewCacheSize(20);
-        rv.setDrawingCacheEnabled(true);
-        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-        rv.invalidate();
-
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -121,7 +111,7 @@ public class HomeFragment extends Fragment {
                 int outItems = m.findFirstVisibleItemPosition();
 
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
-                    loadMore(totalItems);
+                    fetchData(totalItems, false);
                     isScrolling = false;
                 }
 
@@ -129,6 +119,15 @@ public class HomeFragment extends Fragment {
                 rv.invalidate();
             }
         });
+
+        storage = FirebaseStorage.getInstance();
+
+        rv.setHasFixedSize(true);
+        rv.setLayoutManager(m);
+        rv.setItemViewCacheSize(20);
+        rv.setDrawingCacheEnabled(true);
+        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        rv.invalidate();
 
         if (!FETCHED) {
             items = new ArrayList<>();
@@ -139,14 +138,19 @@ public class HomeFragment extends Fragment {
         rv.invalidate();
     }
 
-    public void fetchData() {
-        FirebaseFirestore fs = FirebaseFirestore.getInstance();
-        fs.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+    public void fetchData(final int pos, final boolean firstFetch) {
+        new Handler().post(new Runnable() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (int i = 0; i < NEWS_AMOUNT; i++) {
-                        DocumentSnapshot ds = task.getResult().getDocuments().get(i);
+            public void run() {
+                FirebaseFirestore fs = FirebaseFirestore.getInstance();
+                fs.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        if ((pos) >= task.getResult().getDocuments().size())
+                            return;
+
+                        DocumentSnapshot ds = task.getResult().getDocuments().get(pos);
 
                         News n = new News();
                         n.setTitle(ds.getString("header"));
@@ -155,17 +159,16 @@ public class HomeFragment extends Fragment {
                         n.formatContent();
 
                         items.add(n);
+                        rv.invalidate();
 
-                        fetchImage(n, i, true);
+                        fetchImage(n, pos, firstFetch);
                         Log.d("FIRESTORE INFO", n.toString());
+                        Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
+                        Log.d("SCROLL INFO", String.valueOf(pos));
+                    } else
+                        throw new RuntimeException("Datas couldn't got received, check your internet connection.");
                     }
-                    Log.d("FIRESTORE INFO", "Size: " + items.size());
-
-                    adapter.setNews(items);
-                    rv.setAdapter(adapter);
-                    rv.invalidate();
-                } else
-                    throw new RuntimeException("Datas couldn't got received, check your internet connection.");
+                });
             }
         });
     }
@@ -202,41 +205,5 @@ public class HomeFragment extends Fragment {
 
         assert cm != null;
             return cm.getActiveNetworkInfo() != null;
-    }
-
-    private void loadMore(final int start) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                FirebaseFirestore fs = FirebaseFirestore.getInstance();
-                fs.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-
-                        if ((start) >= task.getResult().getDocuments().size())
-                            return;
-
-                        DocumentSnapshot ds = task.getResult().getDocuments().get(start);
-
-                        News n = new News();
-                        n.setTitle(ds.getString("header"));
-                        n.setContent(ds.getString("content"));
-                        n.setPath(ds.getString("img"));
-                        n.formatContent();
-
-                        adapter.addNews(n);
-                        rv.invalidate();
-
-                        fetchImage(n, start, false);
-                        Log.d("FIRESTORE INFO", n.toString());
-                        Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
-                        Log.d("SCROLL INFO", String.valueOf(start));
-                    } else
-                        throw new RuntimeException("Datas couldn't got received, check your internet connection.");
-                    }
-                });
-            }
-        });
     }
 }

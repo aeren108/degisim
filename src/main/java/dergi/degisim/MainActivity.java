@@ -81,8 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                drawer.closeDrawers();
+            drawer.closeDrawers();
             }
         });
 
@@ -109,7 +108,9 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
         add(R.id.frame, home).commit();
-        home.fetchData();
+        for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
+            home.fetchData(i, true);
+        }
     }
 
     private void initDrawerList() {
