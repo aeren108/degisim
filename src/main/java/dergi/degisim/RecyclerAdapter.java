@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         Picasso.with(context).load(uri).
         resize(980, 660).
         noFade().
+        networkPolicy(NetworkPolicy.OFFLINE).
         into(newsViewHolder.img);
     }
 

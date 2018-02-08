@@ -30,11 +30,11 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
-import dergi.degisim.news.NewsPaper;
+import dergi.degisim.ItemClickListener;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.news.News;
-import dergi.degisim.ItemClickListener;
+import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
