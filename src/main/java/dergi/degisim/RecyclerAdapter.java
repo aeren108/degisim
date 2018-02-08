@@ -37,7 +37,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
 
     @Override
     public void onBindViewHolder(final NewsViewHolder newsViewHolder, final int position) {
-        Uri uri = news.get(position).getUri();
+        final Uri uri = news.get(position).getUri();
         newsViewHolder.title.setText(news.get(position).getTitle());
         Picasso.with(context).load(uri).
         resize(980, 660).
@@ -53,10 +53,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
 
     public void setNews(List<News> news) {
         this.news = news;
-    }
-
-    public void addNews(News n) {
-        news.add(n);
     }
 
     class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

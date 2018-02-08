@@ -47,7 +47,8 @@ public class HomeFragment extends Fragment {
 
     private static ArrayList<News> items;
 
-    public static final int NEWS_AMOUNT = 3;
+    public static final int NEWS_AMOUNT = 3; //Temporary value
+    public static final int LOAD_AMOUNT = 2; //Temporary value
     public static boolean FETCHED = false;
 
     public boolean isScrolling = false;
@@ -111,7 +112,9 @@ public class HomeFragment extends Fragment {
                 int outItems = m.findFirstVisibleItemPosition();
 
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
-                    fetchData(totalItems, false);
+                    for (int i = 0; i < LOAD_AMOUNT; i++) {
+                        fetchData(totalItems + i, false);
+                    }
                     isScrolling = false;
                 }
 
@@ -180,6 +183,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSuccess(Uri uri) {
                 items.get(pos).setUri(uri);
+
                 Log.d("STORAGE INFO", "Got the URI for:" + n.getPath());
                 Log.d("STORAGE INFO", "URI:" + uri.toString());
 
