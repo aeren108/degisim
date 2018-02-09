@@ -6,12 +6,19 @@
     <string name="title_dashboard">Köşe Yazıları</string>
     <string name="title_notifications">Ayarlar</string>
 
-    <!-- DrawerLayout ListView Items -->
-    <string-array name="drawerlist_items">
+    <!-- DrawerLayout Category Items -->
+    <string-array name="category_items">
         <item>Kategori 1</item>
         <item>Kategori 2</item>
         <item>Kategori 3</item>
         <item>Kategori 4</item>
+    </string-array>
+
+    <!-- DrawerLayout Application Items -->
+    <string-array name="application_items">
+        <item>Ayarlar</item>
+        <item>Hakkımızda</item>
+        <item>Öneri Kutusu</item>
     </string-array>
 
     <string name="opened">Menu açık</string>

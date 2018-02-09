@@ -21,14 +21,21 @@ import dergi.degisim.fragment.HomeFragment;
 import dergi.degisim.fragment.PostsFragment;
 import dergi.degisim.fragment.SettingsFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
-    private ListView itemList;
-    private ItemAdapter adapter;
 
-    private List<DrawerItem> drawerItems;
-    private String[] itemTitles;
+    private ListView applicationList;
+    private ListView categoryList;
+
+    private ItemAdapter applicationAdapter;
+    private ItemAdapter categoryAdapter;
+
+    private List<DrawerItem> categoryItems;
+    private List<DrawerItem> applicationItems;
+
+    private String[] applicationTitles;
+    private String[] categoryTitles;
 
     public static CharSequence APP_TITLE;
 
@@ -68,42 +75,33 @@ public class MainActivity extends AppCompatActivity {
         APP_TITLE = getSupportActionBar().getTitle();
 
         drawer = findViewById(R.id.drawer_layout);
-        itemList = findViewById(R.id.drawer_list);
+        categoryList = findViewById(R.id.category_list);
+        applicationList = findViewById(R.id.application_list);
 
-        drawerItems = new ArrayList<>();
-        itemTitles = getResources().getStringArray(R.array.drawerlist_items);
-        initDrawerList();
+        categoryItems = new ArrayList<>();
+        applicationItems = new ArrayList<>();
 
-        adapter = new ItemAdapter(drawerItems, getApplicationContext());
-        itemList.setAdapter(adapter);
+        categoryTitles = getResources().getStringArray(R.array.category_items);
+        applicationTitles = getResources().getStringArray(R.array.application_items);
 
-        itemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        initDrawerLists();
 
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            drawer.closeDrawers();
-            }
-        });
+        categoryAdapter = new ItemAdapter(categoryItems, getApplicationContext());
+        categoryList.setAdapter(categoryAdapter);
+
+        applicationAdapter = new ItemAdapter(applicationItems, getApplicationContext());
+        applicationList.setAdapter(applicationAdapter);
+
+        categoryList.setOnItemClickListener(this);
+        applicationList.setOnItemClickListener(this);
 
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        toggle = new ActionBarDrawerToggle(this, drawer, R.string.opened, R.string.closed) {
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                getSupportActionBar().setTitle("");
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-                getSupportActionBar().setTitle(APP_TITLE);
-            }
-        };
+        toggle = new ActionBarDrawerToggle(this, drawer, R.string.opened, R.string.closed);
 
         drawer.setDrawerListener(toggle);
+        toggle.syncState();
 
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
@@ -113,9 +111,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initDrawerList() {
-        for (int i = 0; i < itemTitles.length; i++) {
-            drawerItems.add(new DrawerItem(itemTitles[i]));
+    private void initDrawerLists() {
+        for (int i = 0; i < categoryTitles.length; i++) {
+            categoryItems.add(new DrawerItem(categoryTitles[i]));
+        }
+
+        for (int i = 0; i < applicationTitles.length; i++) {
+            applicationItems.add(new DrawerItem(applicationTitles[i]));
         }
     }
 
@@ -126,5 +128,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        drawer.closeDrawers();
     }
 }
