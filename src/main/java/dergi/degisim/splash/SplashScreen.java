@@ -1,5 +1,6 @@
 package dergi.degisim.splash;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -8,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,6 +26,8 @@ import dergi.degisim.R;
 import dergi.degisim.fragment.HomeFragment;
 
 public class SplashScreen extends AppCompatActivity {
+    public static final int SPLASH_DURATION = 800;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,7 @@ public class SplashScreen extends AppCompatActivity {
         new Loader(getApplicationContext()).execute();
     }
 
+    @SuppressLint("StaticFieldLeak")
     class Loader extends AsyncTask<Void, Void, Void> {
         private Context context;
 
@@ -49,40 +52,38 @@ public class SplashScreen extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            ImageView splash = findViewById(R.id.splash_img);
-            splash.setImageResource(R.drawable.material_img);
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             final StorageReference storage = FirebaseStorage.getInstance().getReferenceFromUrl("gs://degisim-44155.appspot.com/");
             firestore.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
-                    DocumentSnapshot ds = task.getResult().getDocuments().get(i);
-                    String path = ds.getString("img");
+                    for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
+                        DocumentSnapshot ds = task.getResult().getDocuments().get(i);
+                        String path = ds.getString("img");
 
-                    StorageReference ref = storage.child("images/" + path);
-                    ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                        Picasso.with(getApplicationContext()).load(uri).fetch(new Callback() {
+                        StorageReference ref = storage.child("images/" + path);
+                        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
-                            public void onSuccess() {
+                            public void onSuccess(Uri uri) {
+                            Picasso.with(getApplicationContext()).load(uri).fetch(new Callback() {
+                                @Override
+                                public void onSuccess() {
 
-                            }
+                                }
 
-                            @Override
-                            public void onError() {
+                                @Override
+                                public void onError() {
 
+                                }
+                            });
+                            Log.d("FETCH INFO", "Got the uri on splash screen: " + uri.toString());
                             }
                         });
-                        Log.d("FETCH INFO", "Got the uri on splash screen: " + uri.toString());
-                        }
-                    });
-                }
+                    }
                 }
             });
             try {
-                Thread.sleep(1000);
+                Thread.sleep(SPLASH_DURATION);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -93,6 +94,8 @@ public class SplashScreen extends AppCompatActivity {
         protected void onPostExecute(Void avoid) {
             Intent intent = new Intent(context, MainActivity.class);
             startActivity(intent);
+
+            finish();
         }
     }
 }

@@ -2,7 +2,6 @@
 package dergi.degisim;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,9 +36,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
 
     @Override
     public void onBindViewHolder(final NewsViewHolder newsViewHolder, final int position) {
-        final Uri uri = news.get(position).getUri();
         newsViewHolder.title.setText(news.get(position).getTitle());
-        Picasso.with(context).load(uri).
+
+        Picasso.with(context).load(news.get(position).getUri()).
         resize(980, 660).
         noFade().
         networkPolicy(NetworkPolicy.OFFLINE).

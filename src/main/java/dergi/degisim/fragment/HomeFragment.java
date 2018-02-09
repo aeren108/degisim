@@ -196,6 +196,7 @@ public class HomeFragment extends Fragment {
                 }
 
                 rv.invalidate();
+                adapter.notifyDataSetChanged();
 
                 Log.d("FETCH STATUS", String.valueOf(FETCHED));
 
