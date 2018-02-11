@@ -1,7 +1,9 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -40,9 +43,44 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
 
         Picasso.with(context).load(news.get(position).getUri()).
         resize(980, 660).
-        noFade().
         networkPolicy(NetworkPolicy.OFFLINE).
-        into(newsViewHolder.img);
+        into(newsViewHolder.img, new Callback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onError() {
+                Picasso.with(context).load(news.get(position).getUri()).
+                resize(980, 660).
+                networkPolicy(NetworkPolicy.NO_CACHE).
+                into(newsViewHolder.img, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(context);
+                        alert.setTitle("İNTERNET BAĞLANTISI YOK"); //In English = NO INTERNET CONNECTION
+                        alert.setMessage("İnternet bağlantınızı kontrol edin ve uygulamayı yeniden başlatın"); //In English = Check your connection and
+                        // restart the app
+
+                        alert.setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                android.os.Process.killProcess(android.os.Process.myPid());
+                                System.exit(1);
+                            }
+                        });
+
+                        alert.show();
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -52,6 +90,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
 
     public void setNews(List<News> news) {
         this.news = news;
+    }
+
+    public void addItem(News n) {
+        news.add(n);
+        notifyDataSetChanged();
     }
 
     class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -1,9 +1,7 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -20,13 +18,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -59,20 +55,6 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (!isConnected()) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-            alert.setTitle("İNTERNET BAĞLANTISI YOK");
-            alert.setMessage("İnternet bağlantınızı kontrol edin ve uygulamayı yeniden başlatın");
-
-            alert.setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                    System.exit(1);
-                }
-            });
-        }
-
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -159,47 +141,23 @@ public class HomeFragment extends Fragment {
                         n.setTitle(ds.getString("header"));
                         n.setContent(ds.getString("content"));
                         n.setPath(ds.getString("img"));
+                        n.setUri(Uri.parse(ds.getString("uri")));
                         n.formatContent();
 
-                        items.add(n);
+                        adapter.addItem(n);
                         rv.invalidate();
 
-                        fetchImage(n, pos, firstFetch);
+                        if (firstFetch && pos == NEWS_AMOUNT - 1) {
+                            FETCHED = true;
+                        }
+
                         Log.d("FIRESTORE INFO", n.toString());
                         Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
                         Log.d("SCROLL INFO", String.valueOf(pos));
                     } else
-                        throw new RuntimeException("Datas couldn't got received, check your internet connection.");
+                        return;
                     }
                 });
-            }
-        });
-    }
-
-    private void fetchImage(final News n, final int pos, final boolean firstFetch) {
-        StorageReference s = storage.getReferenceFromUrl("gs://degisim-44155.appspot.com/").child("images/" + n.getPath());
-        Log.d("STORAGE INFO", n.getPath());
-        s.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                items.get(pos).setUri(uri);
-
-                Log.d("STORAGE INFO", "Got the URI for:" + n.getPath());
-                Log.d("STORAGE INFO", "URI:" + uri.toString());
-
-                if (firstFetch) {
-                    adapter.setNews(items);
-                    rv.setAdapter(adapter);
-
-                    if (pos == NEWS_AMOUNT - 1)
-                        FETCHED = true;
-                }
-
-                rv.invalidate();
-                adapter.notifyDataSetChanged();
-
-                Log.d("FETCH STATUS", String.valueOf(FETCHED));
-
             }
         });
     }
