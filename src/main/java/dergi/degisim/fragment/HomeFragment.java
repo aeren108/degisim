@@ -1,13 +1,9 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,12 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 
@@ -37,15 +32,15 @@ import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCR
 public class HomeFragment extends Fragment {
     private RecyclerView rv;
     private RecyclerAdapter adapter;
-    LinearLayoutManager m;
-
-    private FirebaseStorage storage;
+    private LinearLayoutManager m;
 
     private static ArrayList<News> items;
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
     public static boolean FETCHED = false;
+
+    private int lastFetch;
 
     public boolean isScrolling = false;
 
@@ -96,6 +91,7 @@ public class HomeFragment extends Fragment {
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
                     for (int i = 0; i < LOAD_AMOUNT; i++) {
                         fetchData(totalItems + i, false);
+                        Log.d("POS OF FIRST DEBUG" , "POS : " + lastFetch);
                     }
                     isScrolling = false;
                 }
@@ -104,8 +100,6 @@ public class HomeFragment extends Fragment {
                 rv.invalidate();
             }
         });
-
-        storage = FirebaseStorage.getInstance();
 
         rv.setHasFixedSize(true);
         rv.setLayoutManager(m);
@@ -128,45 +122,30 @@ public class HomeFragment extends Fragment {
             @Override
             public void run() {
                 FirebaseFirestore fs = FirebaseFirestore.getInstance();
-                fs.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
+                q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        if ((pos) >= task.getResult().getDocuments().size())
+                    public void onSuccess(QuerySnapshot documentSnapshots) {
+                        if (pos >= documentSnapshots.getDocuments().size())
                             return;
 
-                        DocumentSnapshot ds = task.getResult().getDocuments().get(pos);
-
-                        News n = new News();
+                        DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
+                        News n = ds.toObject(News.class);
                         n.setTitle(ds.getString("header"));
-                        n.setContent(ds.getString("content"));
-                        n.setPath(ds.getString("img"));
-                        n.setUri(Uri.parse(ds.getString("uri")));
                         n.formatContent();
 
                         adapter.addItem(n);
                         rv.invalidate();
-
-                        if (firstFetch && pos == NEWS_AMOUNT - 1) {
-                            FETCHED = true;
-                        }
-
-                        Log.d("FIRESTORE INFO", n.toString());
-                        Log.d("FIRESTORE INFO", "Size: " + task.getResult().getDocuments().size());
-                        Log.d("SCROLL INFO", String.valueOf(pos));
-                    } else
-                        return;
                     }
                 });
+
+                if (firstFetch) {
+                    FETCHED = true;
+                }
+
+                lastFetch = pos;
+                Log.d("POS OF" , "POS : " + lastFetch);
             }
         });
-    }
-
-    private boolean isConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getActivity()
-        .getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        assert cm != null;
-            return cm.getActiveNetworkInfo() != null;
     }
 }

@@ -1,3 +1,4 @@
+// -*- @author aeren_pozitif  -*- //
 package dergi.degisim.splash;
 
 import android.annotation.SuppressLint;
@@ -13,6 +14,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -21,7 +23,7 @@ import dergi.degisim.R;
 import dergi.degisim.fragment.HomeFragment;
 
 public class SplashScreen extends AppCompatActivity {
-    public static final int SPLASH_DURATION = 2500;
+    public static final int SPLASH_DURATION = 2000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,8 @@ public class SplashScreen extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             try {
                 FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-                firestore.collection("haberler").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                Query q = firestore.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
+                q.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {

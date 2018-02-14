@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
-        add(R.id.frame, home).commit();
+        replace(R.id.frame, home).commit();
         for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
             home.fetchData(i, true);
         }
