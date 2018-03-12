@@ -8,9 +8,9 @@
 
     <!-- DrawerLayout Category Items -->
     <string-array name="category_items">
-        <item>Kategori 1</item>
-        <item>Kategori 2</item>
-        <item>Kategori 3</item>
+        <item>Bilim</item>
+        <item>Sanat</item>
+        <item>Makaleler</item>
         <item>Kategori 4</item>
     </string-array>
 
@@ -18,7 +18,6 @@
     <string-array name="application_items">
         <item>Ayarlar</item>
         <item>Hakkımızda</item>
-        <item>Öneri Kutusu</item>
     </string-array>
 
     <string name="opened">Menu açık</string>

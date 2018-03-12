@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 import dergi.degisim.ItemClickListener;
+import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.news.News;
@@ -29,20 +31,23 @@ import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements AdapterView.OnItemClickListener{
     private RecyclerView rv;
     private RecyclerAdapter adapter;
     private LinearLayoutManager m;
 
     private static ArrayList<News> items;
+    public static ArrayList<News> catItems;
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
-    public static boolean FETCHED = false;
 
     private int lastFetch;
-
+    private int lastCatFetch = 0;
     public boolean isScrolling = false;
+
+    private String currentCategory = "";
+    public boolean catMode = false;
 
     public HomeFragment() {
 
@@ -57,18 +62,29 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
+
         m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
         adapter = new RecyclerAdapter(getActivity(), new ItemClickListener() {
 
             @Override
             public void onClick(View v, int pos) {
-                Log.d("NEWS", "Clicked on: " + pos + ". item");
-                Intent intent = new Intent(getActivity(), NewsPaper.class);
-                intent.putExtra("content", items.get(pos).getContent());
-                intent.putExtra("header", items.get(pos).getTitle());
-                intent.putExtra("uri", items.get(pos).getUri().toString());
-                startActivity(intent);
+                if (!catMode) {
+                    Log.d("NEWS", "Clicked on: " + pos + ". item");
+                    Intent intent = new Intent(getActivity(), NewsPaper.class);
+                    intent.putExtra("content", items.get(pos).getContent());
+                    intent.putExtra("header", items.get(pos).getTitle());
+                    intent.putExtra("uri", items.get(pos).getUri());
+                    startActivity(intent);
+                } else {
+                    Log.d("NEWS", "Clicked on: " + pos + ". item");
+                    Intent intent = new Intent(getActivity(), NewsPaper.class);
+                    intent.putExtra("content", catItems.get(pos).getContent());
+                    intent.putExtra("header", catItems.get(pos).getTitle());
+                    intent.putExtra("uri", catItems.get(pos).getUri());
+                    startActivity(intent);
+                }
             }
         });
 
@@ -89,10 +105,17 @@ public class HomeFragment extends Fragment {
                 int outItems = m.findFirstVisibleItemPosition();
 
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
-                    for (int i = 0; i < LOAD_AMOUNT; i++) {
-                        fetchData(totalItems + i, false);
-                        Log.d("POS OF FIRST DEBUG" , "POS : " + lastFetch);
+                    if (!catMode) {
+                        for (int i = 0; i < LOAD_AMOUNT; i++) {
+                            fetchData(lastFetch + 1 + i);
+                            Log.d("POS OF FIRST DEBUG", "POS : " + lastFetch);
+                        }
+                    } else {
+                        for (int i = 0; i < LOAD_AMOUNT; i++) {
+                            fetchCategory(currentCategory, lastCatFetch + i + 1);
+                        }
                     }
+
                     isScrolling = false;
                 }
 
@@ -108,8 +131,11 @@ public class HomeFragment extends Fragment {
         rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         rv.invalidate();
 
-        if (!FETCHED) {
+        if (items == null) {
             items = new ArrayList<>();
+        }
+        if (catItems == null) {
+            catItems = new ArrayList<>();
         }
 
         adapter.setNews(items);
@@ -117,7 +143,7 @@ public class HomeFragment extends Fragment {
         rv.invalidate();
     }
 
-    public void fetchData(final int pos, final boolean firstFetch) {
+    public void fetchData(final int pos) {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -139,13 +165,70 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-                if (firstFetch) {
-                    FETCHED = true;
-                }
-
                 lastFetch = pos;
-                Log.d("POS OF" , "POS : " + lastFetch);
             }
         });
+    }
+
+    public void fetchCategory(final String category, final int pos) {
+        FirebaseFirestore fs = FirebaseFirestore.getInstance();
+        fs.collection("haberler").whereEqualTo("category", category).
+        orderBy("id", Query.Direction.DESCENDING).
+        get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                if (pos >= documentSnapshots.getDocuments().size())
+                    return;
+
+                DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
+                News n = new News();
+                n.setTitle(ds.getString("header"));
+                n.setContent(ds.getString("content"));
+                n.setUri(ds.getString("uri"));
+                n.formatContent();
+
+                Log.d("INFF", n.toString());
+
+                catItems.add(n);
+                adapter.setNews(catItems);
+                rv.invalidate();
+                Log.d("DBB", n.getTitle() );
+                adapter.notifyDataSetChanged();
+
+                currentCategory = category;
+                lastCatFetch = pos;
+
+                Log.d("POTT", currentCategory);
+            }
+        });
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String[] titles = ((MainActivity)getActivity()).categoryTitles;
+        if (!currentCategory.equalsIgnoreCase(titles[position])) {
+            if (titles[position].equalsIgnoreCase("Bilim")) {
+                for (int i = 0; i < 2; i++)
+                    fetchCategory("bilim", i);
+            }
+
+            if (titles[position].equalsIgnoreCase("Sanat")) {
+                for (int i = 0; i < 2; i++)
+                    fetchCategory("sanat", i);
+            }
+        }
+
+        catItems.clear();
+
+        catMode = true;
+        currentCategory = titles[position];
+        rv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("CLICKED", "clcck");
+            }
+        });
+
+        ((MainActivity)getActivity()).drawer.closeDrawers();
     }
 }

@@ -8,36 +8,33 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import dergi.degisim.drawer.DrawerItem;
-import dergi.degisim.drawer.ItemAdapter;
 import dergi.degisim.fragment.HomeFragment;
 import dergi.degisim.fragment.PostsFragment;
 import dergi.degisim.fragment.SettingsFragment;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
-    private DrawerLayout drawer;
+public class MainActivity extends AppCompatActivity {
+
+    public DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
 
-    private ListView applicationList;
-    private ListView categoryList;
+    public ListView applicationList;
+    public ListView categoryList;
 
-    private ItemAdapter applicationAdapter;
-    private ItemAdapter categoryAdapter;
+    private ArrayAdapter applicationAdapter;
+    private ArrayAdapter categoryAdapter;
 
     private List<DrawerItem> categoryItems;
     private List<DrawerItem> applicationItems;
 
-    private String[] applicationTitles;
-    private String[] categoryTitles;
-
-    public static CharSequence APP_TITLE;
+    public String[] applicationTitles;
+    public String[] categoryTitles;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -72,8 +69,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        APP_TITLE = getSupportActionBar().getTitle();
-
         drawer = findViewById(R.id.drawer_layout);
         categoryList = findViewById(R.id.category_list);
         applicationList = findViewById(R.id.application_list);
@@ -86,14 +81,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         initDrawerLists();
 
-        categoryAdapter = new ItemAdapter(categoryItems, getApplicationContext());
+        categoryAdapter = new ArrayAdapter(this, R.layout.drawer_list, R.id.title, categoryTitles);
         categoryList.setAdapter(categoryAdapter);
 
-        applicationAdapter = new ItemAdapter(applicationItems, getApplicationContext());
+        applicationAdapter = new ArrayAdapter(this, R.layout.drawer_list, R.id.title, applicationTitles);
         applicationList.setAdapter(applicationAdapter);
-
-        categoryList.setOnItemClickListener(this);
-        applicationList.setOnItemClickListener(this);
 
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -107,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         getSupportFragmentManager().beginTransaction().
         replace(R.id.frame, home).commit();
         for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
-            home.fetchData(i, true);
+            home.fetchData(i);
         }
     }
 
@@ -123,15 +115,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        if (toggle.onOptionsItemSelected(item)) {
+        if (toggle.onOptionsItemSelected(item))
             return true;
-        }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        drawer.closeDrawers();
     }
 }

@@ -14,8 +14,7 @@
         card_view:cardUseCompatPadding="true"
         card_view:cardBackgroundColor="@color/cardview_dark_background"
         android:layout_width="wrap_content"
-        android:layout_height="275dp"
-        android:contextClickable="true">
+        android:layout_height="275dp">
         
         <RelativeLayout
             android:layout_width="match_parent"
@@ -32,7 +31,6 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:textSize="26dp"
-                android:elevation="5000dp"
                 android:textColor="#FFFFFF"
                 android:layout_alignBottom="@+id/img"
                 android:paddingLeft="7dp"

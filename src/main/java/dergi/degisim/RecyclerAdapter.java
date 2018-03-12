@@ -1,9 +1,7 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,30 +53,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
                 Picasso.with(context).load(news.get(position).getUri()).
                 resize(980, 660).
                 networkPolicy(NetworkPolicy.NO_CACHE).
-                into(newsViewHolder.img, new Callback() {
-                    @Override
-                    public void onSuccess() {
-
-                    }
-
-                    @Override
-                    public void onError() {
-                        AlertDialog.Builder alert = new AlertDialog.Builder(context);
-                        alert.setTitle("İNTERNET BAĞLANTISI YOK"); //In English = NO INTERNET CONNECTION
-                        alert.setMessage("İnternet bağlantınızı kontrol edin ve uygulamayı yeniden başlatın"); //In English = Check your connection and
-                        // restart the app
-
-                        alert.setPositiveButton("Tamam", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                android.os.Process.killProcess(android.os.Process.myPid());
-                                System.exit(1);
-                            }
-                        });
-
-                        alert.show();
-                    }
-                });
+                into(newsViewHolder.img);
             }
         });
     }
@@ -97,7 +72,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         notifyDataSetChanged();
     }
 
-    class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView title;
         ImageView img;
 
@@ -110,10 +85,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         }
 
         @Override
-        public void onClick(View view) {
+        public void onClick(View v) {
             Log.d("CLICK EVENT", "Clicked on:" + getAdapterPosition());
             if (clickListener!= null)
-                clickListener.onClick(view, getAdapterPosition());
+                clickListener.onClick(itemView, getAdapterPosition());
             else
                 Log.d("Null", "OnClickListener is null");
         }
