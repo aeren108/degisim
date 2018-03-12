@@ -221,13 +221,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         catItems.clear();
 
         catMode = true;
-        currentCategory = titles[position];
-        rv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("CLICKED", "clcck");
-            }
-        });
+        currentCategory = titles[position];     
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
     }
