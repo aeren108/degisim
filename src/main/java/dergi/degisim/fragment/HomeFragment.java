@@ -234,7 +234,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         catItems.clear();
 
         catMode = true;
+<<<<<<< HEAD
         currentCategory = titles[position];
+=======
+        currentCategory = titles[position];     
+>>>>>>> ec313c5ca77919b4b4c4d560229f60c3e206574a
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
     }
