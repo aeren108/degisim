@@ -37,13 +37,13 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     private LinearLayoutManager m;
 
     private static ArrayList<News> items;
-    public static ArrayList<News> catItems;
+    public static ArrayList<News> catItems; //cat represents 'CATegory'
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
 
     private int lastFetch;
-    private int lastCatFetch = 0;
+    private int lastCatFetch;
     public boolean isScrolling = false;
 
     private String currentCategory = "";
@@ -86,6 +86,13 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                     startActivity(intent);
                 }
             }
+        }, new ItemClickListener() {
+            @Override
+            public void onClick(View v, int pos) {
+                News n = adapter.getNews().get(pos);
+                saveNews(n);
+                Log.d( "BTN EVENT", n.toString());
+            }
         });
 
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -108,7 +115,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                     if (!catMode) {
                         for (int i = 0; i < LOAD_AMOUNT; i++) {
                             fetchData(lastFetch + 1 + i);
-                            Log.d("POS OF FIRST DEBUG", "POS : " + lastFetch);
                         }
                     } else {
                         for (int i = 0; i < LOAD_AMOUNT; i++) {
@@ -156,8 +162,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                             return;
 
                         DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
-                        News n = ds.toObject(News.class);
+
+                        News n = new News();
                         n.setTitle(ds.getString("header"));
+                        n.setContent(ds.getString("content"));
+                        n.setUri(ds.getString("uri"));
                         n.formatContent();
 
                         adapter.addItem(n);
@@ -181,53 +190,51 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                     return;
 
                 DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
+
                 News n = new News();
                 n.setTitle(ds.getString("header"));
                 n.setContent(ds.getString("content"));
                 n.setUri(ds.getString("uri"));
                 n.formatContent();
 
-                Log.d("INFF", n.toString());
-
                 catItems.add(n);
                 adapter.setNews(catItems);
                 rv.invalidate();
-                Log.d("DBB", n.getTitle() );
                 adapter.notifyDataSetChanged();
 
                 currentCategory = category;
                 lastCatFetch = pos;
-
-                Log.d("POTT", currentCategory);
             }
         });
+    }
+
+    private void saveNews(final News n) {
+        /*
+         * Save news to users database
+         */
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         String[] titles = ((MainActivity)getActivity()).categoryTitles;
-        if (!currentCategory.equalsIgnoreCase(titles[position])) {
-            if (titles[position].equalsIgnoreCase("Bilim")) {
-                for (int i = 0; i < 2; i++)
-                    fetchCategory("bilim", i);
-            }
-
-            if (titles[position].equalsIgnoreCase("Sanat")) {
-                for (int i = 0; i < 2; i++)
-                    fetchCategory("sanat", i);
-            }
+        if (currentCategory.equalsIgnoreCase(titles[position])) {
+            ((MainActivity)getActivity()).drawer.closeDrawers();
+            return;
         }
+
+        if (titles[position].equalsIgnoreCase("Bilim")) {
+            for (int i = 0; i < 2; i++)
+                fetchCategory("bilim", i);
+        } else if (titles[position].equalsIgnoreCase("Sanat")) {
+            for (int i = 0; i < 2; i++)
+                fetchCategory("sanat", i);
+        }
+
 
         catItems.clear();
 
         catMode = true;
         currentCategory = titles[position];
-        rv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("CLICKED", "clcck");
-            }
-        });
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
     }

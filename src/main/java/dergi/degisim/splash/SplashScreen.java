@@ -23,7 +23,7 @@ import dergi.degisim.R;
 import dergi.degisim.fragment.HomeFragment;
 
 public class SplashScreen extends AppCompatActivity {
-    public static final int SPLASH_DURATION = 1800;
+    public static final int SPLASH_DURATION = 2000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

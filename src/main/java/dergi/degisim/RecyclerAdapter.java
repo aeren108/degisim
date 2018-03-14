@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,12 +22,14 @@ import dergi.degisim.news.News;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsViewHolder> {
     private List<News> news;
     private ItemClickListener clickListener;
+    private ItemClickListener saveButtonListener;
 
     private final Context context;
 
-    public RecyclerAdapter(Context context, ItemClickListener clickListener) {
+    public RecyclerAdapter(Context context, ItemClickListener clickListener, ItemClickListener saveButtonListener) {
         this.context = context;
         this.clickListener = clickListener;
+        this.saveButtonListener = saveButtonListener;
     }
 
     @Override
@@ -67,6 +70,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         this.news = news;
     }
 
+    public List<News> getNews() {return news;}
+
     public void addItem(News n) {
         news.add(n);
         notifyDataSetChanged();
@@ -75,11 +80,23 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
     class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView title;
         ImageView img;
+        ImageButton btn;
 
-        NewsViewHolder(View itemView) {
+        NewsViewHolder(final View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.title);
             img = itemView.findViewById(R.id.img);
+            btn = itemView.findViewById(R.id.save_button);
+
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (saveButtonListener!= null)
+                        saveButtonListener.onClick(itemView, getAdapterPosition());
+                    else
+                        Log.d("Null", "OnClickListener is null");
+                }
+            });
 
             itemView.setOnClickListener(this);
         }
