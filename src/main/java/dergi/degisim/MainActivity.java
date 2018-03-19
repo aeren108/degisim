@@ -12,12 +12,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import dergi.degisim.drawer.DrawerItem;
+import dergi.degisim.drawer.ItemAdapter;
 import dergi.degisim.fragment.HomeFragment;
-import dergi.degisim.fragment.PostsFragment;
-import dergi.degisim.fragment.SettingsFragment;
+import dergi.degisim.fragment.MarkedFragment;
+import dergi.degisim.fragment.WeeklyFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,14 +27,16 @@ public class MainActivity extends AppCompatActivity {
     public ListView applicationList;
     public ListView categoryList;
 
-    private ArrayAdapter applicationAdapter;
+    private ItemAdapter applicationAdapter;
     private ArrayAdapter categoryAdapter;
 
-    private List<DrawerItem> categoryItems;
-    private List<DrawerItem> applicationItems;
+    private ArrayList<DrawerItem> categoryItems;
+    private ArrayList<DrawerItem> applicationItems;
 
     public String[] applicationTitles;
     public String[] categoryTitles;
+
+    public static boolean isLoggedIn = false;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -48,14 +50,14 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.frame, homeFragment).commit();
                     return true;
                 case R.id.navigation_dashboard:
-                    PostsFragment postsFragment = new PostsFragment();
+                    MarkedFragment postsFragment = new MarkedFragment();
                     getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame, postsFragment).commit();
                     return true;
                 case R.id.navigation_notifications:
-                    SettingsFragment settingsFragment = new SettingsFragment();
+                    WeeklyFragment weeklyFragment = new WeeklyFragment();
                     getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.frame, settingsFragment).commit();
+                    .replace(R.id.frame, weeklyFragment).commit();
                     return true;
             }
             return false;
@@ -84,8 +86,9 @@ public class MainActivity extends AppCompatActivity {
         categoryAdapter = new ArrayAdapter(this, R.layout.drawer_list, R.id.title, categoryTitles);
         categoryList.setAdapter(categoryAdapter);
 
-        applicationAdapter = new ArrayAdapter(this, R.layout.drawer_list, R.id.title, applicationTitles);
+        applicationAdapter = new ItemAdapter(applicationItems, getApplicationContext());
         applicationList.setAdapter(applicationAdapter);
+
 
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

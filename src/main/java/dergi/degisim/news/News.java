@@ -9,6 +9,8 @@ public class News {
     private String uri;
     private String title;
     private String content;
+    private long id;
+    private long read;
 
     public static final String CONTENT_TOKEN = "*-";
 
@@ -20,10 +22,6 @@ public class News {
         this.uri = uri;
         this.title = title;
         this.content = content;
-    }
-
-    public void formatContent() {
-        content = content.replace(CONTENT_TOKEN, "\n");
     }
 
     public String getTitle() {
@@ -50,8 +48,22 @@ public class News {
         this.uri = uri;
     }
 
+    public long getID() {return  id;}
+
+    public void setID(long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
         return "[NEWS = [(Title="+title+", Content="+content+")]";
+    }
+
+    public long getRead() {
+        return read;
+    }
+
+    public void setRead(long read) {
+        this.read = read;
     }
 }

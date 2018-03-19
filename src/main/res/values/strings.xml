@@ -3,19 +3,19 @@
 
     <!-- BottomNavigationView Items -->
     <string name="title_home">Ana Sayfa</string>
-    <string name="title_dashboard">Köşe Yazıları</string>
-    <string name="title_notifications">Ayarlar</string>
+    <string name="title_dashboard">Kaydedilenler</string>
+    <string name="title_notifications">Haftanın Enleri</string>
 
     <!-- DrawerLayout Category Items -->
     <string-array name="category_items">
         <item>Bilim</item>
         <item>Sanat</item>
         <item>Makaleler</item>
-        <item>Kategori 4</item>
     </string-array>
 
     <!-- DrawerLayout Application Items -->
     <string-array name="application_items">
+        <item>Çıkış Yap</item>
         <item>Ayarlar</item>
         <item>Hakkımızda</item>
     </string-array>
@@ -23,7 +23,6 @@
     <string name="opened">Menu açık</string>
     <string name="closed">Menu kapalı</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_newspaper">NewspaperActivity</string>
     <string name="large_text">
@@ -117,4 +116,8 @@
     </string>
     <string name="action_settings">Ayarlar</string>
     <string name="title_activity_splash_screen">Değişim Dergisi</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="s_register">Üye Ol</string>
+    <string name="s_login">GİRİŞ YAP</string>
+    <string name="or">VEYA</string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dergi.degisim.R;
@@ -25,6 +26,17 @@ public class ItemAdapter extends BaseAdapter {
     @Override
     public int getCount() {
         return items.size();
+    }
+
+    public void editItem(int pos, String text) {
+        items.get(pos).setTitle(text);
+        notifyDataSetChanged();
+    }
+
+    public void refresh(ArrayList<DrawerItem> ditem) {
+        items.clear();
+        items.addAll(ditem);
+        notifyDataSetChanged();
     }
 
     @Override
