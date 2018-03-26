@@ -1,4 +1,5 @@
-<android.support.v4.widget.DrawerLayout android:id="@+id/drawer_layout"
+<android.support.v4.widget.DrawerLayout
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -13,7 +14,7 @@
         android:layout_width="270dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_gravity="left"
+        android:layout_gravity="start"
         android:background="#f7f7f7">
 
         <LinearLayout
@@ -49,11 +50,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="22dp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:text="Kategoriler"
+            android:text="@string/cat"
             android:paddingTop="15dp"
-            android:paddingLeft="2dp"/>
+            android:paddingLeft="2dp" />
 
         <View
             android:layout_width="match_parent"

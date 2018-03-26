@@ -8,17 +8,16 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import dergi.degisim.R;
 
 public class ItemAdapter extends BaseAdapter {
-    List<DrawerItem> items;
+    List<String> items;
     Context context;
     TextView title;
 
-    public ItemAdapter(List<DrawerItem> items, Context context) {
+    public ItemAdapter(List<String> items, Context context) {
         this.items = items;
         this.context = context;
     }
@@ -29,13 +28,7 @@ public class ItemAdapter extends BaseAdapter {
     }
 
     public void editItem(int pos, String text) {
-        items.get(pos).setTitle(text);
-        notifyDataSetChanged();
-    }
-
-    public void refresh(ArrayList<DrawerItem> ditem) {
-        items.clear();
-        items.addAll(ditem);
+        items.set(pos, text);
         notifyDataSetChanged();
     }
 
@@ -56,7 +49,7 @@ public class ItemAdapter extends BaseAdapter {
             View v = LayoutInflater.from(context).inflate(R.layout.drawer_list, null);
 
             title = v.findViewById(R.id.title);
-            title.setText(items.get(position).getTitle());
+            title.setText(items.get(position));
 
             return v;
         }

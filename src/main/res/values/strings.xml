@@ -10,12 +10,12 @@
     <string-array name="category_items">
         <item>Bilim</item>
         <item>Sanat</item>
-        <item>Makaleler</item>
+        <item>Müzik</item>
     </string-array>
 
     <!-- DrawerLayout Application Items -->
     <string-array name="application_items">
-        <item>Çıkış Yap</item>
+        <item>Giriş Yap</item>
         <item>Ayarlar</item>
         <item>Hakkımızda</item>
     </string-array>
@@ -120,4 +120,6 @@
     <string name="s_register">Üye Ol</string>
     <string name="s_login">GİRİŞ YAP</string>
     <string name="or">VEYA</string>
+    <string name="cat">Kategoriler</string>
+    <string name="todo">TODO</string>
 </resources>

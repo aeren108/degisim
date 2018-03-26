@@ -99,8 +99,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(AuthResult authResult) {
                 Toast.makeText(getApplicationContext(), "Giriş yapıldı", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
-                MainActivity.isLoggedIn = true;
                 finish();
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -130,8 +130,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onSuccess(AuthResult authResult) {
                 Toast.makeText(getApplicationContext(), "Başarılı", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
-                MainActivity.isLoggedIn = true;
                 finish();
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -144,6 +144,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void signIn() {
         Intent intent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivityForResult(intent, RC_SIGN_IN);
         Log.d("AUTH", "Intent started");
     }
@@ -182,8 +183,8 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d("AUTH", "USER INFO: " + user.getDisplayName() + " " + user.getEmail());
 
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
-                    MainActivity.isLoggedIn = true;
                     finish();
                 } else {
                     Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();
@@ -193,6 +194,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d("AUTH", "Failed authentication");
+                Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();
             }
         });
     }

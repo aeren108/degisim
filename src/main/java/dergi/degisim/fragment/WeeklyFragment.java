@@ -90,6 +90,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     intent.putExtra("header", items.get(pos).getTitle());
                     intent.putExtra("uri", items.get(pos).getUri());
                     intent.putExtra("id", items.get(pos).getID());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
                 } else {
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
@@ -98,6 +99,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     intent.putExtra("header", catItems.get(pos).getTitle());
                     intent.putExtra("uri", catItems.get(pos).getUri());
                     intent.putExtra("id", catItems.get(pos).getID());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
                 }
             }

@@ -38,7 +38,7 @@ public class NewsPaper extends AppCompatActivity {
         String content = bundle.getString("content");
         String header = bundle.getString("header");
         String uri = bundle.getString("uri");
-        final String id = bundle.getString("id");
+        final long id = bundle.getLong("id");
 
         Picasso.with(getApplicationContext()).load(uri).resize(800,600).into(img);
         Log.d("CONTENT", content);
@@ -52,12 +52,12 @@ public class NewsPaper extends AppCompatActivity {
         w.getSettings().setPluginState(WebSettings.PluginState.ON);
         setTitle(header);
 
-        FirebaseFirestore.getInstance().collection("haberler").document(id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        FirebaseFirestore.getInstance().collection("haberler").document(String.valueOf(id)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                int read = Integer.parseInt(task.getResult().getString("read"));
-                DocumentReference ref = FirebaseFirestore.getInstance().collection("haberler").document(id);
-                ref.update("read", String.valueOf(read+1));
+                long read = task.getResult().getLong("read");
+                DocumentReference ref = FirebaseFirestore.getInstance().collection("haberler").document(String.valueOf(id));
+                ref.update("read", read+1);
             }
         });
     }

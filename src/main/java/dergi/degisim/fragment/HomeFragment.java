@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -17,7 +18,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,6 +30,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
@@ -46,6 +51,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
     private static ArrayList<News> items;
     public static ArrayList<News> catItems; //cat represents 'CATegory'
+    public ArrayList<News> queryItems;
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
@@ -55,7 +61,10 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     public boolean isScrolling = false;
 
     private String currentCategory = "";
-    public boolean catMode = false;
+    public char mode = 'd'; //d = default, c = category, q = search query
+
+    private Map<Character, Character> dict = new HashMap<>(); //Dictionary for Turkish characters
+    private char[] enChars = {'o', 'i', 'u', 'g', 'c', 's'};
 
     public HomeFragment() {
 
@@ -83,24 +92,34 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
         adapter = new RecyclerAdapter(getActivity(), new ItemClickListener() {
-
             @Override
             public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
-                if (!catMode) {
+                if (mode == 'd') {
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
                     Intent intent = new Intent(getActivity(), NewsPaper.class);
                     intent.putExtra("content", items.get(pos).getContent());
                     intent.putExtra("header", items.get(pos).getTitle());
                     intent.putExtra("uri", items.get(pos).getUri());
                     intent.putExtra("id", items.get(pos).getID());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
-                } else {
+                } else if (mode == 'c'){
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
                     Intent intent = new Intent(getActivity(), NewsPaper.class);
                     intent.putExtra("content", catItems.get(pos).getContent());
                     intent.putExtra("header", catItems.get(pos).getTitle());
                     intent.putExtra("uri", catItems.get(pos).getUri());
                     intent.putExtra("id", catItems.get(pos).getID());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    startActivity(intent);
+                } else {
+                    Log.d("NEWS", "Clicked on: " + pos + ". item");
+                    Intent intent = new Intent(getActivity(), NewsPaper.class);
+                    intent.putExtra("content", queryItems.get(pos).getContent());
+                    intent.putExtra("header", queryItems.get(pos).getTitle());
+                    intent.putExtra("uri", queryItems.get(pos).getUri());
+                    intent.putExtra("id", queryItems.get(pos).getID());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
                 }
             }
@@ -114,7 +133,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        //TODO: Handle take back func.
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -141,14 +160,16 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                 int outItems = m.findFirstVisibleItemPosition();
 
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
-                    if (!catMode) {
+                    if (mode == 'd') {
                         for (int i = 0; i < LOAD_AMOUNT; i++) {
                             fetchData(lastFetch + 1 + i);
                         }
-                    } else {
+                    } else if (mode == 'c'){
                         for (int i = 0; i < LOAD_AMOUNT; i++) {
                             fetchCategory(currentCategory, lastCatFetch + i + 1);
                         }
+                    } else {
+
                     }
                     isScrolling = false;
                 }
@@ -162,12 +183,19 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         rv.invalidate();
 
-        if (items == null) {
+        if (items == null)
             items = new ArrayList<>();
-        }
-        if (catItems == null) {
+        if (catItems == null)
             catItems = new ArrayList<>();
-        }
+        queryItems = new ArrayList<>();
+
+        dict.put('o', 'ö');
+        dict.put('i', 'ı');
+        dict.put('c', 'ç');
+        dict.put('g', 'ğ');
+        dict.put('u', 'ü');
+        dict.put('s', 'ş');
+
 
         adapter.setNews(items);
         rv.setAdapter(adapter);
@@ -197,6 +225,10 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                         n.setID(ds.getLong("id"));
                         n.setRead(ds.getLong("read"));
 
+                        for (News news : items) {
+                            if (news.getID() == n.getID())
+                                return;
+                        }
                         adapter.addItem(n);
                         rv.invalidate();
                     }
@@ -229,6 +261,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
                 Log.d("CAT", "Fetching category: " + pos + " info: \n" + n.toString());
 
+                for (News news : catItems) {
+                    if (news.getID() == n.getID())
+                        return;
+                }
+
                 catItems.add(n);
                 adapter.setNews(catItems);
                 rv.invalidate();
@@ -240,6 +277,44 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                 srl.setRefreshing(false);
             }
         });
+    }
+
+    public void performSearchQuery(final String query) {
+        FirebaseFirestore fs = FirebaseFirestore.getInstance();
+        final Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
+        q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                Log.d("QUERY", "Searching for: " + query);
+
+                for (DocumentSnapshot ds : documentSnapshots) {
+                    String toSearch = ds.getString("header").toLowerCase();
+
+                    if (toSearch.contains(query.toLowerCase())) {
+                        Log.d("FOUND", "Found news: " + toSearch);
+
+                        News n = new News();
+                        n.setTitle(ds.getString("header"));
+                        n.setContent(ds.getString("content"));
+                        n.setUri(ds.getString("uri"));
+                        n.setID(ds.getLong("id"));
+                        n.setRead(ds.getLong("read"));
+
+                        queryItems.add(n);
+                        adapter.setNews(queryItems);
+                        rv.invalidate();
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Haberleri bulamadık :(", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        mode = 'q';
     }
 
     private void saveNews(final News n) {
@@ -263,7 +338,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                 fetchCategory("sanat", i);
         }
 
-        catMode = true;
+        mode = 'c';
         currentCategory = titles[position];
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
@@ -271,16 +346,18 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
     @Override
     public void onRefresh() {
-        if (catMode) {
+        if (mode == 'c') {
             catItems.clear();
             for (int i = 0; i < LOAD_AMOUNT; i++) {
                 fetchCategory(currentCategory, i);
             }
-        } else {
+        } else if (mode == 'd'){
             items.clear();
             for (int i = 0; i < LOAD_AMOUNT; i++) {
                 fetchData(i);
             }
+        } else {
+            srl.setRefreshing(false);
         }
     }
 }

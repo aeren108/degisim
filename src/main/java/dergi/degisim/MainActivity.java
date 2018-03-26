@@ -1,25 +1,32 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
+import com.google.firebase.auth.FirebaseAuth;
 
-import dergi.degisim.drawer.DrawerItem;
+import java.util.Arrays;
+
+import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.drawer.ItemAdapter;
 import dergi.degisim.fragment.HomeFragment;
 import dergi.degisim.fragment.MarkedFragment;
 import dergi.degisim.fragment.WeeklyFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
     public DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
@@ -28,15 +35,10 @@ public class MainActivity extends AppCompatActivity {
     public ListView categoryList;
 
     private ItemAdapter applicationAdapter;
-    private ArrayAdapter categoryAdapter;
-
-    private ArrayList<DrawerItem> categoryItems;
-    private ArrayList<DrawerItem> applicationItems;
+    private ItemAdapter categoryAdapter;
 
     public String[] applicationTitles;
     public String[] categoryTitles;
-
-    public static boolean isLoggedIn = false;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -75,20 +77,40 @@ public class MainActivity extends AppCompatActivity {
         categoryList = findViewById(R.id.category_list);
         applicationList = findViewById(R.id.application_list);
 
-        categoryItems = new ArrayList<>();
-        applicationItems = new ArrayList<>();
-
         categoryTitles = getResources().getStringArray(R.array.category_items);
         applicationTitles = getResources().getStringArray(R.array.application_items);
 
-        initDrawerLists();
-
-        categoryAdapter = new ArrayAdapter(this, R.layout.drawer_list, R.id.title, categoryTitles);
+        categoryAdapter = new ItemAdapter(Arrays.asList(categoryTitles), getApplicationContext());
         categoryList.setAdapter(categoryAdapter);
 
-        applicationAdapter = new ItemAdapter(applicationItems, getApplicationContext());
+        applicationAdapter = new ItemAdapter(Arrays.asList(applicationTitles), getApplicationContext());
         applicationList.setAdapter(applicationAdapter);
 
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            applicationAdapter.editItem(0, "Çıkış Yap");
+            applicationList.setAdapter(applicationAdapter);
+            applicationList.invalidate();
+        }
+
+        applicationList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                        Intent intent = new Intent(getApplication(), LoginActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        FirebaseAuth.getInstance().signOut();
+
+                        applicationAdapter.editItem(0, "Giriş Yap");
+                        applicationList.setAdapter(applicationAdapter);
+                        applicationList.invalidate();
+                    }
+                }
+            }
+        });
 
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -106,20 +128,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initDrawerLists() {
-        for (int i = 0; i < categoryTitles.length; i++) {
-            categoryItems.add(new DrawerItem(categoryTitles[i]));
-        }
-
-        for (int i = 0; i < applicationTitles.length; i++) {
-            applicationItems.add(new DrawerItem(applicationTitles[i]));
-        }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return toggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (toggle.onOptionsItemSelected(item))
-            return true;
-        return super.onOptionsItemSelected(item);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(this);
+        searchItem.setOnActionExpandListener(this);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        HomeFragment home = new HomeFragment();
+        getSupportFragmentManager().beginTransaction().
+        replace(R.id.frame, home).commit();
+
+        home.performSearchQuery(query);
+
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
+    }
+
+    @Override
+    public boolean onMenuItemActionExpand(MenuItem item) {
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemActionCollapse(MenuItem item) {
+        HomeFragment home = new HomeFragment();
+        getSupportFragmentManager().beginTransaction().
+        replace(R.id.frame, home).commit();
+        return true;
     }
 }
