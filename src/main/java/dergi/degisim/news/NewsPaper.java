@@ -47,8 +47,9 @@ public class NewsPaper extends AppCompatActivity {
                       "<img src='https://www.universalorlando.com/web/k2/en/us/files/assets/spongebob-storepants-orlando-logo-b.png?imwidth=221'/> ";
 
         w.getSettings().setSupportZoom(true);
-        w.loadData(html,"text/html", "UTF-8");
+        w.loadData(html,"text/html; charset=utf-8", "utf-8");
         w.getSettings().setJavaScriptEnabled(true);
+        w.getSettings().setDefaultTextEncodingName("utf-8");
         w.getSettings().setPluginState(WebSettings.PluginState.ON);
         setTitle(header);
 

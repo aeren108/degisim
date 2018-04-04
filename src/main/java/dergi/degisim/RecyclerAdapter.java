@@ -41,7 +41,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
     @Override
     public void onBindViewHolder(final NewsViewHolder newsViewHolder, final int position) {
         newsViewHolder.title.setText(news.get(position).getTitle());
-        newsViewHolder.read.setText(String.valueOf(news.get(position).getRead()));
 
         Picasso.with(context).load(news.get(position).getUri()).
         resize(980, 660).
@@ -81,14 +80,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
 
     class NewsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView title;
-        TextView read;
         ImageView img;
         ImageButton btn;
 
         NewsViewHolder(final View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.title);
-            read = itemView.findViewById(R.id.read);
             img = itemView.findViewById(R.id.img);
             btn = itemView.findViewById(R.id.save_button);
 

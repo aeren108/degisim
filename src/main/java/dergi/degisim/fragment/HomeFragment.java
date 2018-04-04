@@ -241,57 +241,19 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     }
 
     public void fetchCategory(final String category, final int pos) {
-        FirebaseFirestore fs = FirebaseFirestore.getInstance();
-        fs.collection("haberler").whereEqualTo("category", category).
-        orderBy("id", Query.Direction.DESCENDING).
-        get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-
-            public void onSuccess(QuerySnapshot documentSnapshots) {
-                if (pos >= documentSnapshots.getDocuments().size())
-                    return;
-
-                DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
-
-                News n = new News();
-                n.setTitle(ds.getString("header"));
-                n.setContent(ds.getString("content"));
-                n.setUri(ds.getString("uri"));
-                n.setID(ds.getLong("id"));
-                n.setRead(ds.getLong("read"));
-
-                Log.d("CAT", "Fetching category: " + pos + " info: \n" + n.toString());
-
-                for (News news : catItems) {
-                    if (news.getID() == n.getID())
-                        return;
-                }
-
-                catItems.add(n);
-                adapter.setNews(catItems);
-                rv.invalidate();
-                adapter.notifyDataSetChanged();
-
-                currentCategory = category;
-                lastCatFetch = pos;
-
-                srl.setRefreshing(false);
-            }
-        });
-    }
-
-    public void performSearchQuery(final String query) {
-        FirebaseFirestore fs = FirebaseFirestore.getInstance();
-        final Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
-        q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        new Handler().post(new Runnable() {
             @Override
-            public void onSuccess(QuerySnapshot documentSnapshots) {
-                Log.d("QUERY", "Searching for: " + query);
+            public void run() {
+                FirebaseFirestore fs = FirebaseFirestore.getInstance();
+                fs.collection("haberler").whereEqualTo("category", category).
+                        orderBy("id", Query.Direction.DESCENDING).
+                        get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
 
-                for (DocumentSnapshot ds : documentSnapshots) {
-                    String toSearch = ds.getString("header").toLowerCase();
+                    public void onSuccess(QuerySnapshot documentSnapshots) {
+                        if (pos >= documentSnapshots.getDocuments().size())
+                            return;
 
-                    if (toSearch.contains(query.toLowerCase())) {
-                        Log.d("FOUND", "Found news: " + toSearch);
+                        DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
 
                         News n = new News();
                         n.setTitle(ds.getString("header"));
@@ -300,19 +262,68 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                         n.setID(ds.getLong("id"));
                         n.setRead(ds.getLong("read"));
 
-                        queryItems.add(n);
-                        adapter.setNews(queryItems);
+                        Log.d("CAT", "Fetching category: " + pos + " info: \n" + n.toString());
+
+                        for (News news : catItems) {
+                            if (news.getID() == n.getID())
+                                return;
+                        }
+
+                        catItems.add(n);
+                        adapter.setNews(catItems);
                         rv.invalidate();
                         adapter.notifyDataSetChanged();
+
+                        currentCategory = category;
+                        lastCatFetch = pos;
+
+                        srl.setRefreshing(false);
                     }
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Haberleri bulamadık :(", Toast.LENGTH_LONG).show();
+                });
             }
         });
+    }
+
+    public void performSearchQuery(final String query) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                FirebaseFirestore fs = FirebaseFirestore.getInstance();
+                final Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
+                q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot documentSnapshots) {
+                        Log.d("QUERY", "Searching for: " + query);
+
+                        for (DocumentSnapshot ds : documentSnapshots) {
+                            String toSearch = ds.getString("header").toLowerCase();
+
+                            if (toSearch.contains(query.toLowerCase())) {
+                                Log.d("FOUND", "Found news: " + toSearch);
+
+                                News n = new News();
+                                n.setTitle(ds.getString("header"));
+                                n.setContent(ds.getString("content"));
+                                n.setUri(ds.getString("uri"));
+                                n.setID(ds.getLong("id"));
+                                n.setRead(ds.getLong("read"));
+
+                                queryItems.add(n);
+                                adapter.setNews(queryItems);
+                                rv.invalidate();
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "Haberleri bulamadık :(", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
 
         mode = 'q';
     }
@@ -322,6 +333,8 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         FirebaseUser usr = auth.getCurrentUser();
         if (usr == null)
             return;
+
+        //TODO: Handle saving news
     }
 
     @Override

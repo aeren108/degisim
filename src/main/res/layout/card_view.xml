@@ -47,32 +47,10 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
+                android:layout_marginTop="3dp"
+                android:layout_marginRight="1dp"
                 android:src="@drawable/filled_save_button"
                 android:background="@null"/>
-
-            <TextView
-                android:id="@+id/read"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBottom="@+id/save_button"
-                android:layout_toEndOf="@+id/imageView2"
-                android:layout_toRightOf="@+id/imageView2"
-                android:fontFamily="monospace"
-                android:text="TextView"
-                android:textColor="#fff8f8"
-                android:textSize="15dp" />
-
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginLeft="7dp"
-                android:layout_marginStart="7dp"
-                android:layout_marginTop="7dp"
-                card_view:srcCompat="@drawable/icons8_eye_32" />
 
         </RelativeLayout>
 

@@ -79,8 +79,12 @@ public class MarkedFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String allMarkeds = (String) dataSnapshot.child("marks").getValue();
-                String[] seperatedMarks = allMarkeds.split(",");
-                markeds = Arrays.asList(seperatedMarks);
+                if (!allMarkeds.equals("empty")) {
+                    String[] seperatedMarks = allMarkeds.split(",");
+                    markeds = Arrays.asList(seperatedMarks);
+                } else {
+                    //TODO:Handle empty marked list
+                }
             }
 
             @Override
@@ -105,6 +109,7 @@ public class MarkedFragment extends Fragment {
                     n.setRead(ds.getLong("read"));
 
                     news.add(n);
+                    //TODO:Set the list of recycler adapter
                 }
             }
         });
