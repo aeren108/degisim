@@ -1,7 +1,6 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -24,14 +23,17 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
@@ -63,9 +65,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     private String currentCategory = "";
     public char mode = 'd'; //d = default, c = category, q = search query
 
-    private Map<Character, Character> dict = new HashMap<>(); //Dictionary for Turkish characters
-    private char[] enChars = {'o', 'i', 'u', 'g', 'c', 's'};
-
     public HomeFragment() {
 
     }
@@ -75,7 +74,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    @SuppressLint("ResourceAsColor")
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -84,10 +82,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
-        srl.setColorSchemeColors(android.R.color.holo_blue_bright,
-                                 android.R.color.holo_green_light,
-                                 android.R.color.holo_orange_light,
-                                 android.R.color.holo_red_light);
 
         m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
@@ -127,13 +121,15 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
                 News n = adapter.getNews().get(pos);
-                saveNews(n);
+                final String[] data = saveNews(n); //data array is storing mark datas before marking and after marking
 
                 Snackbar s = Snackbar.make(view, "Haber Kaydedildi", Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //TODO: Handle take back func.
+                        FirebaseDatabase.getInstance().getReference("users").
+                        child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                        child("markeds").setValue(data[1]);
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -188,13 +184,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         if (catItems == null)
             catItems = new ArrayList<>();
         queryItems = new ArrayList<>();
-
-        dict.put('o', 'ö');
-        dict.put('i', 'ı');
-        dict.put('c', 'ç');
-        dict.put('g', 'ğ');
-        dict.put('u', 'ü');
-        dict.put('s', 'ş');
 
 
         adapter.setNews(items);
@@ -328,13 +317,35 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         mode = 'q';
     }
 
-    private void saveNews(final News n) {
+    private String[] saveNews(final News n) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
-        FirebaseUser usr = auth.getCurrentUser();
+        final FirebaseUser usr = auth.getCurrentUser();
         if (usr == null)
-            return;
+            return null;
 
-        //TODO: Handle saving news
+        final String marked[] = new String[2];
+
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = db.getReference("users");
+        ref.child(usr.getUid()).child("markeds").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue().equals("empty"))
+                    marked[0] = "";
+                else
+                    marked[0] = (String) dataSnapshot.getValue();
+
+                marked[1] = n.getID() + "," + marked[0];
+                ref.child(usr.getUid()).child("markeds").setValue(marked[1]);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getContext(), "Kaydedilemedi", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        return marked;
     }
 
     @Override

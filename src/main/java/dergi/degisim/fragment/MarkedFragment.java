@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,7 +36,8 @@ public class MarkedFragment extends Fragment {
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private String id;
     private List<String> markeds;
-    private List<News> news;
+
+    private TextView empty;
 
     public MarkedFragment() {
 
@@ -43,15 +45,19 @@ public class MarkedFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_markeds, container, false);
+
+        empty = v.findViewById(R.id.empty);
+
         if (checkLoggedIn())
             loadMarkedNews();
 
-        return inflater.inflate(R.layout.fragment_markeds, container, false);
+        return v;
     }
 
     private boolean checkLoggedIn() {
         FirebaseUser user = auth.getCurrentUser();
-        if (user == null) {
+        if (user == null || user.isAnonymous()) {
             AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
             alert.setTitle("Kullanıcı Girişi Yok");
             alert.setMessage("Kullanıcı girişi yapılmadığından dolayı kaydedilenler gösterilemiyor.");
@@ -80,10 +86,11 @@ public class MarkedFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String allMarkeds = (String) dataSnapshot.child("marks").getValue();
                 if (!allMarkeds.equals("empty")) {
+                    empty.setVisibility(TextView.INVISIBLE);
                     String[] seperatedMarks = allMarkeds.split(",");
                     markeds = Arrays.asList(seperatedMarks);
                 } else {
-                    //TODO:Handle empty marked list
+                    empty.setVisibility(TextView.VISIBLE);
                 }
             }
 

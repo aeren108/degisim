@@ -5,9 +5,12 @@
     tools:context="dergi.degisim.fragment.MarkedFragment">
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Örnek menü herhangi bi şey olacak"
-        android:textSize="26dp"/>
+        android:id="@+id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_markeds"
+        android:textSize="26sp"
+        android:layout_gravity="center"
+        android:textColor="@color/colorPrimary"/>
 
 </FrameLayout>

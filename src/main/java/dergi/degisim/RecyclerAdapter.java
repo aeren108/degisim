@@ -11,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -92,7 +93,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (saveButtonListener!= null)
+                    if (saveButtonListener!= null && !FirebaseAuth.getInstance().getCurrentUser().isAnonymous())
                         saveButtonListener.onClick(itemView, getAdapterPosition());
                     else
                         Log.d("Null", "OnClickListener is null");

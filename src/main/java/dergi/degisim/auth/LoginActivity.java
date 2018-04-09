@@ -1,3 +1,4 @@
+// -*- @author aeren_pozitif  -*- //
 package dergi.degisim.auth;
 
 import android.content.Intent;
@@ -41,6 +42,7 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInButton glogin;
 
     private GoogleApiClient apiClient;
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     private final static int RC_SIGN_IN = 2002;
 
@@ -88,10 +90,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void login() {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
+
+        if (auth.getCurrentUser().isAnonymous())
+            auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
@@ -116,10 +119,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void register() {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
+
+        if (auth.getCurrentUser().isAnonymous())
+            auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
@@ -139,7 +143,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 FirebaseDatabase db = FirebaseDatabase.getInstance();
                 DatabaseReference ref = db.getReference("users");
-                ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue("empty");
+                ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
 
                 finish();
             }
@@ -152,6 +156,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signIn() {
+        if (auth.getCurrentUser().isAnonymous())
+            auth.signOut();
+
         Intent intent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivityForResult(intent, RC_SIGN_IN);
@@ -176,7 +183,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        final FirebaseAuth auth = FirebaseAuth.getInstance();
         Log.d("AUTTH", "authenticating..");
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
