@@ -34,6 +34,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
@@ -64,6 +66,8 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
     private String currentCategory = "";
     public char mode = 'd'; //d = default, c = category, q = search query
+
+    private String lastMarkings = "";
 
     public HomeFragment() {
 
@@ -121,15 +125,16 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
                 News n = adapter.getNews().get(pos);
-                final String[] data = saveNews(n); //data array is storing mark datas before marking and after marking
+                saveNews(n);
 
                 Snackbar s = Snackbar.make(view, "Haber Kaydedildi", Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        FirebaseDatabase.getInstance().getReference("users").
-                        child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
-                        child("markeds").setValue(data[1]);
+                        if (!lastMarkings.equals(""))
+                            FirebaseDatabase.getInstance().getReference("users").
+                            child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                            child("markeds").setValue(lastMarkings);
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -317,35 +322,40 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         mode = 'q';
     }
 
-    private String[] saveNews(final News n) {
+    private void saveNews(final News n) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         final FirebaseUser usr = auth.getCurrentUser();
         if (usr == null)
-            return null;
-
-        final String marked[] = new String[2];
+            return;
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         final DatabaseReference ref = db.getReference("users");
-        ref.child(usr.getUid()).child("markeds").addValueEventListener(new ValueEventListener() {
+        ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                String buffer;
+                List<String> allMarks = null;
                 if (dataSnapshot.getValue().equals("empty"))
-                    marked[0] = "";
-                else
-                    marked[0] = (String) dataSnapshot.getValue();
+                    buffer = "";
+                else {
+                    buffer = (String) dataSnapshot.getValue();
+                    allMarks = Arrays.asList(buffer.split(","));
+                    lastMarkings = buffer;
+                }
 
-                marked[1] = n.getID() + "," + marked[0];
-                ref.child(usr.getUid()).child("markeds").setValue(marked[1]);
+                if (allMarks.contains(String.valueOf(n.getID())))
+                    return;
+
+
+                ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Toast.makeText(getContext(), "Kaydedilemedi", Toast.LENGTH_LONG).show();
+                ref.removeEventListener(this);
             }
         });
-
-        return marked;
     }
 
     @Override

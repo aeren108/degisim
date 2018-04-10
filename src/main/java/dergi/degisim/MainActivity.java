@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public String[] applicationTitles;
     public String[] categoryTitles;
 
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
+
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -124,19 +126,23 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-                Log.d("AUTH", "Logged in anonymously");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d("AUTH", "Couldn't logged in anonymously");
-                //TODO:Alert about error on authentication
-            }
-        });
+        if (auth.getCurrentUser() == null) {
+            auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                @Override
+                public void onSuccess(AuthResult authResult) {
+                    Log.d("AUTH", "Logged in anonymously");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    /*Log.d("AUTH", "Couldn't logged in anonymously");
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
+                    alert.setTitle("Yetkilendirme Hatası");
+                    alert.setMessage("Anonim olarak giriş yapılamadı").setPositiveButton("Tamam", null);
+                    alert.show();*/
+                }
+            });
+        }
 
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().

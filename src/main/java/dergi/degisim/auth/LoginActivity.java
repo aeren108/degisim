@@ -93,8 +93,9 @@ public class LoginActivity extends AppCompatActivity {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
-        if (auth.getCurrentUser().isAnonymous())
-            auth.signOut();
+        if (auth.getCurrentUser() != null)
+            if (auth.getCurrentUser().isAnonymous())
+                auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
@@ -122,8 +123,9 @@ public class LoginActivity extends AppCompatActivity {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
-        if (auth.getCurrentUser().isAnonymous())
-            auth.signOut();
+        if (auth.getCurrentUser() != null)
+            if (auth.getCurrentUser().isAnonymous())
+                auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
@@ -156,8 +158,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signIn() {
-        if (auth.getCurrentUser().isAnonymous())
-            auth.signOut();
+        if (auth.getCurrentUser() != null)
+            if (auth.getCurrentUser().isAnonymous())
+                auth.signOut();
 
         Intent intent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -200,6 +203,11 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
+
+                    FirebaseDatabase db = FirebaseDatabase.getInstance();
+                    DatabaseReference ref = db.getReference("users");
+                    ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
+
                     finish();
                 } else {
                     Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();

@@ -93,10 +93,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (saveButtonListener!= null && !FirebaseAuth.getInstance().getCurrentUser().isAnonymous())
-                        saveButtonListener.onClick(itemView, getAdapterPosition());
-                    else
-                        Log.d("Null", "OnClickListener is null");
+                    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                        if (saveButtonListener != null && !FirebaseAuth.getInstance().getCurrentUser().isAnonymous())
+                            saveButtonListener.onClick(itemView, getAdapterPosition());
+                        else
+                            Log.d("Null", "OnClickListener is null");
+                    }
                 }
             });
 
