@@ -16,16 +16,25 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
@@ -36,7 +45,7 @@ import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener {
 
     private RecyclerView rv;
     private RecyclerAdapter adapter;
@@ -47,15 +56,14 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private static ArrayList<News> items;
     public static ArrayList<News> catItems; //cat represents 'CATegory'
 
-    public static final int NEWS_AMOUNT = 3; //Temporary value
-    public static final int LOAD_AMOUNT = 2; //Temporary value
-
     private int lastFetch;
     private int lastCatFetch;
+
     public boolean isScrolling = false;
+    public boolean catMode = false;
 
     private String currentCategory = "";
-    public boolean catMode = false;
+    private String lastMarkings = "";
 
     public WeeklyFragment() {
 
@@ -71,7 +79,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
+        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(this);
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
@@ -116,7 +124,10 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        if (!lastMarkings.equals(""))
+                            FirebaseDatabase.getInstance().getReference("users").
+                            child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                            child("markeds").setValue(lastMarkings);
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -143,8 +154,13 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 int outItems = m.findFirstVisibleItemPosition();
 
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
-                    for (int i = 0; i < LOAD_AMOUNT; i++)
-                        fetchData(lastFetch + 1 + i);
+                    if (catMode) {
+                        for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
+                            fetchCategory(currentCategory, lastCatFetch + 1 + i);
+                    } else {
+                        for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
+                            fetchData(lastFetch + 1 + i);
+                    }
 
                     isScrolling = false;
                 }
@@ -172,7 +188,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         rv.setAdapter(adapter);
         rv.invalidate();
 
-        for (int i = 0; i < LOAD_AMOUNT; i++) {
+        for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
             fetchData(i);
         }
     }
@@ -211,19 +227,116 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         });
     }
 
+    public void fetchCategory(final String category, final int pos) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                FirebaseFirestore fs = FirebaseFirestore.getInstance();
+                fs.collection("haberler").whereEqualTo("category", category).
+                orderBy("read", Query.Direction.DESCENDING).
+                get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+
+                    public void onSuccess(QuerySnapshot documentSnapshots) {
+                        if (pos >= documentSnapshots.getDocuments().size())
+                            return;
+
+                        DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
+
+                        News n = new News();
+                        n.setTitle(ds.getString("header"));
+                        n.setContent(ds.getString("content"));
+                        n.setUri(ds.getString("uri"));
+                        n.setID(ds.getLong("id"));
+                        n.setRead(ds.getLong("read"));
+
+                        Log.d("CAT", "Fetching category: " + pos + " info: \n" + n.toString());
+
+                        for (News news : catItems) {
+                            if (news.getID() == n.getID())
+                                return;
+                        }
+
+                        catItems.add(n);
+                        adapter.setNews(catItems);
+                        rv.invalidate();
+                        adapter.notifyDataSetChanged();
+
+                        currentCategory = category;
+                        lastCatFetch = pos;
+
+                        srl.setRefreshing(false);
+                    }
+                });
+            }
+        });
+    }
+
     private void saveNews(final News n) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
-        FirebaseUser usr = auth.getCurrentUser();
+        final FirebaseUser usr = auth.getCurrentUser();
         if (usr == null)
             return;
+
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = db.getReference("users");
+        ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String buffer;
+                List<String> allMarks = null;
+                if (dataSnapshot.getValue().equals("empty")) {
+                    buffer = "";
+                    allMarks = new ArrayList<>();
+                }
+                else {
+                    buffer = (String) dataSnapshot.getValue();
+                    allMarks = Arrays.asList(buffer.split(","));
+                    lastMarkings = buffer;
+                }
+
+                if (allMarks.contains(String.valueOf(n.getID())))
+                    return;
+
+
+                ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getContext(), "Kaydedilemedi", Toast.LENGTH_LONG).show();
+                ref.removeEventListener(this);
+            }
+        });
     }
 
 
     @Override
     public void onRefresh() {
-        items.clear();
-        for (int i = 0; i < LOAD_AMOUNT; i++) {
-            fetchData(i);
+        if (catMode) {
+            catItems.clear();
+            for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
+                fetchCategory(currentCategory, i);
+            }
+        } else {
+            items.clear();
+            for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
+                fetchData(i);
+            }
         }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String[] titles = ((MainActivity)getActivity()).categoryTitles;
+
+        catItems.clear();
+        catMode = true;
+
+        for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
+            fetchCategory(titles[position].toLowerCase(), i);
+
+        currentCategory = titles[position];
+
+        ((MainActivity)getActivity()).drawer.closeDrawers();
     }
 }

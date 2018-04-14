@@ -365,15 +365,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
         catItems.clear();
 
-        if (titles[position].equalsIgnoreCase("Bilim")) {
-            for (int i = 0; i < 2; i++)
-                fetchCategory("bilim", i);
-        } else if (titles[position].equalsIgnoreCase("Sanat")) {
-            for (int i = 0; i < 2; i++)
-                fetchCategory("sanat", i);
-        }
+        for (int i = 0; i < LOAD_AMOUNT; i++)
+            fetchCategory(titles[position].toLowerCase(), i);
 
         mode = 'c';
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle(titles[position]);
         currentCategory = titles[position];
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
