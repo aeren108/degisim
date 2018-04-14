@@ -28,6 +28,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 import dergi.degisim.ItemClickListener;
+import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.news.News;
@@ -69,6 +70,8 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);

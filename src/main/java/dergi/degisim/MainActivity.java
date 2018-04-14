@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
+    public static BottomNavigationView navigation;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         drawer = findViewById(R.id.drawer_layout);
@@ -173,9 +174,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
         replace(R.id.frame, home).commit();
+        navigation.setSelectedItemId(R.id.navigation_home);
 
         home.performSearchQuery(query);
-
         return false;
     }
 
@@ -194,6 +195,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
         replace(R.id.frame, home).commit();
+        navigation.setSelectedItemId(R.id.navigation_home);
+
         return true;
     }
 }

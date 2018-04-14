@@ -318,7 +318,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             }
         });
 
-
         mode = 'q';
     }
 
@@ -335,8 +334,10 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String buffer;
                 List<String> allMarks = null;
-                if (dataSnapshot.getValue().equals("empty"))
+                if (dataSnapshot.getValue().equals("empty")) {
                     buffer = "";
+                    allMarks = new ArrayList<>();
+                }
                 else {
                     buffer = (String) dataSnapshot.getValue();
                     allMarks = Arrays.asList(buffer.split(","));
