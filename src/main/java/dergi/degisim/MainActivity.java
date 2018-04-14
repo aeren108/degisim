@@ -149,7 +149,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         getSupportFragmentManager().beginTransaction().
         replace(R.id.frame, home).commit();
         for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
-            home.fetchData(i);
+            if (home.u != null)
+                home.u.fetchData("id", i);
         }
     }
 

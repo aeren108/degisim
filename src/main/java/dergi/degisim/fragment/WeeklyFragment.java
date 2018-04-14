@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -17,35 +16,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+import dergi.degisim.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
+import dergi.degisim.Utilities;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, AdapterView.OnItemClickListener {
+public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
+                                                        AdapterView.OnItemClickListener,
+                                                        DataListener{
 
     private RecyclerView rv;
     private RecyclerAdapter adapter;
@@ -55,6 +45,8 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private static ArrayList<News> items;
     public static ArrayList<News> catItems; //cat represents 'CATegory'
+
+    private Utilities u;
 
     private int lastFetch;
     private int lastCatFetch;
@@ -66,7 +58,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private String lastMarkings = "";
 
     public WeeklyFragment() {
-
+        u = new Utilities(getContext(), this);
     }
 
     @Override
@@ -118,7 +110,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
                 News n = adapter.getNews().get(pos);
-                saveNews(n);
+                u.saveNews(n);
 
                 Snackbar s = Snackbar.make(view, "Haber Kaydedildi", Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
@@ -156,10 +148,10 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
                     if (catMode) {
                         for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
-                            fetchCategory(currentCategory, lastCatFetch + 1 + i);
+                            u.fetchCategory(currentCategory, lastCatFetch + 1 + i);
                     } else {
                         for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
-                            fetchData(lastFetch + 1 + i);
+                            u.fetchData("read", lastFetch + 1 + i);
                     }
 
                     isScrolling = false;
@@ -189,124 +181,8 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         rv.invalidate();
 
         for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
-            fetchData(i);
+            u.fetchData("read", i);
         }
-    }
-
-    public void fetchData(final int pos) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                FirebaseFirestore fs = FirebaseFirestore.getInstance();
-                Query q = fs.collection("haberler").orderBy("read", Query.Direction.DESCENDING);
-                q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot documentSnapshots) {
-                        if (pos >= documentSnapshots.getDocuments().size()) {
-                            Log.d("RET", "Returng index out of bound");
-                            return;
-                        }
-
-                        DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
-
-                        News n = new News();
-                        n.setTitle(ds.getString("header"));
-                        n.setContent(ds.getString("content"));
-                        n.setUri(ds.getString("uri"));
-                        n.setID(ds.getLong("id"));
-                        n.setRead(ds.getLong("read"));
-
-                        adapter.addItem(n);
-                        rv.invalidate();
-                    }
-                });
-
-                lastFetch = pos;
-                srl.setRefreshing(false);
-            }
-        });
-    }
-
-    public void fetchCategory(final String category, final int pos) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                FirebaseFirestore fs = FirebaseFirestore.getInstance();
-                fs.collection("haberler").whereEqualTo("category", category).
-                orderBy("read", Query.Direction.DESCENDING).
-                get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-
-                    public void onSuccess(QuerySnapshot documentSnapshots) {
-                        if (pos >= documentSnapshots.getDocuments().size())
-                            return;
-
-                        DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
-
-                        News n = new News();
-                        n.setTitle(ds.getString("header"));
-                        n.setContent(ds.getString("content"));
-                        n.setUri(ds.getString("uri"));
-                        n.setID(ds.getLong("id"));
-                        n.setRead(ds.getLong("read"));
-
-                        Log.d("CAT", "Fetching category: " + pos + " info: \n" + n.toString());
-
-                        for (News news : catItems) {
-                            if (news.getID() == n.getID())
-                                return;
-                        }
-
-                        catItems.add(n);
-                        adapter.setNews(catItems);
-                        rv.invalidate();
-                        adapter.notifyDataSetChanged();
-
-                        currentCategory = category;
-                        lastCatFetch = pos;
-
-                        srl.setRefreshing(false);
-                    }
-                });
-            }
-        });
-    }
-
-    private void saveNews(final News n) {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        final FirebaseUser usr = auth.getCurrentUser();
-        if (usr == null)
-            return;
-
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        final DatabaseReference ref = db.getReference("users");
-        ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String buffer;
-                List<String> allMarks = null;
-                if (dataSnapshot.getValue().equals("empty")) {
-                    buffer = "";
-                    allMarks = new ArrayList<>();
-                }
-                else {
-                    buffer = (String) dataSnapshot.getValue();
-                    allMarks = Arrays.asList(buffer.split(","));
-                    lastMarkings = buffer;
-                }
-
-                if (allMarks.contains(String.valueOf(n.getID())))
-                    return;
-
-
-                ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getContext(), "Kaydedilemedi", Toast.LENGTH_LONG).show();
-                ref.removeEventListener(this);
-            }
-        });
     }
 
 
@@ -315,12 +191,12 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         if (catMode) {
             catItems.clear();
             for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
-                fetchCategory(currentCategory, i);
+                u.fetchCategory(currentCategory, i);
             }
         } else {
             items.clear();
             for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
-                fetchData(i);
+                u.fetchData("read", i);
             }
         }
     }
@@ -333,10 +209,49 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         catMode = true;
 
         for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
-            fetchCategory(titles[position].toLowerCase(), i);
+            u.fetchCategory(titles[position].toLowerCase(), i);
 
         currentCategory = titles[position];
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
+    }
+
+    @Override
+    public void onDataFetched(News n, int pos) {
+        for (News news : items) {
+            if (news.getID() == n.getID())
+                return;
+        }
+
+        items.add(n);
+        adapter.setNews(items);
+        adapter.notifyDataSetChanged();
+        rv.invalidate();
+
+        lastFetch = pos;
+        srl.setRefreshing(false);
+    }
+
+    @Override
+    public void onCategoryFetched(String category, News n, int pos) {
+        for (News news : catItems) {
+            if (news.getID() == n.getID())
+                return;
+        }
+
+        catItems.add(n);
+        adapter.setNews(catItems);
+        rv.invalidate();
+        adapter.notifyDataSetChanged();
+
+        currentCategory = category;
+        lastCatFetch = pos;
+
+        srl.setRefreshing(false);
+    }
+
+    @Override
+    public void onDataSaved(String lastMarkings) {
+        this.lastMarkings = lastMarkings;
     }
 }

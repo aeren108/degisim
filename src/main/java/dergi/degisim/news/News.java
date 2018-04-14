@@ -1,9 +1,6 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.news;
 
-/**
- * Created by Eren Colak on 18.01.2018.
- */
 
 public class News {
     private String uri;
@@ -11,6 +8,7 @@ public class News {
     private String content;
     private long id;
     private long read;
+    private boolean saved;
 
     public static final String CONTENT_TOKEN = "*-";
 
@@ -54,16 +52,24 @@ public class News {
         this.id = id;
     }
 
-    @Override
-    public String toString() {
-        return "[NEWS = [(Title="+title+", Content="+content+")]";
-    }
-
     public long getRead() {
         return read;
     }
 
     public void setRead(long read) {
         this.read = read;
+    }
+
+    public boolean isSaved() {
+        return saved;
+    }
+
+    public void setSaved(boolean saved) {
+        this.saved = saved;
+    }
+
+    @Override
+    public String toString() {
+        return "[NEWS = [(Title="+title+", Content="+content+")]";
     }
 }

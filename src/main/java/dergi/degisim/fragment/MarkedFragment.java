@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -26,18 +25,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import dergi.degisim.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
+import dergi.degisim.Utilities;
 import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
@@ -45,7 +43,8 @@ import dergi.degisim.news.NewsPaper;
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
 //TODO: Implement recycler view
-public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
+                                                        DataListener{
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private String id;
     private List<String> markeds;
@@ -57,11 +56,13 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private LinearLayoutManager m;
     private SwipeRefreshLayout srl;
 
+    private Utilities u;
+
     private boolean isScrolling;
     private int lastFetch;
 
     public MarkedFragment() {
-
+        u = new Utilities(getContext(), this);
     }
 
     @Override
@@ -115,8 +116,8 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     @Override
                     public void onClick(View v) {
                         FirebaseDatabase.getInstance().getReference("users").
-                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
-                                child("markeds").setValue(data[1]);
+                        child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                        child("markeds").setValue(data[1]);
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -208,11 +209,11 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 String allMarkeds = (String) dataSnapshot.getValue();
                 if (!allMarkeds.equals("empty")) {
                     empty.setVisibility(TextView.INVISIBLE);
-                    String[] seperatedMarks = allMarkeds.split(",");
-                    markeds = Arrays.asList(seperatedMarks);
+                    markeds = Arrays.asList(allMarkeds.split(","));
                     Log.d("MARK", markeds.toString());
                     Log.d("MARK", "Load is complete");
-                    fetchData(pos, markeds);
+                    if (pos < markeds.size())
+                        u.fetchData("id", Integer.parseInt(markeds.get(pos)));
                 } else {
                     srl.setRefreshing(false);
                     empty.setVisibility(TextView.VISIBLE);
@@ -226,42 +227,6 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         });
     }
 
-    private void fetchData(final int pos, final List<String> markeds) {
-        FirebaseFirestore fs = FirebaseFirestore.getInstance();
-        fs.collection("haberler").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot documentSnapshots) {
-                if (pos >= documentSnapshots.getDocuments().size() || pos >= markeds.size()) {
-                    Log.d("MARK", "Pos is higher than list size");
-                    srl.setRefreshing(false);
-                    return;
-                }
-
-                DocumentSnapshot ds = documentSnapshots.getDocuments().get(Integer.parseInt(markeds.get(pos)));
-
-                News n = new News();
-                n.setTitle(ds.getString("header"));
-                n.setContent(ds.getString("content"));
-                n.setUri(ds.getString("uri"));
-                n.setID(ds.getLong("id"));
-                n.setRead(ds.getLong("read"));
-
-                for (News nw : items) {
-                    if (nw.getID() == n.getID())
-                        return;
-                }
-
-                items.add(n);
-                adapter.setNews(items);
-                rv.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                rv.invalidate();
-
-                lastFetch = pos;
-                srl.setRefreshing(false);
-            }
-        });
-    }
 
     @Override
     public void onRefresh() {
@@ -270,5 +235,32 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
             for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
                 loadMarkedNews(i);
         }
+    }
+
+    @Override
+    public void onDataFetched(News n, int pos) {
+        for (News nw : items) {
+            if (nw.getID() == n.getID())
+                return;
+        }
+
+        items.add(n);
+        adapter.setNews(items);
+        rv.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        rv.invalidate();
+
+        lastFetch = pos;
+        srl.setRefreshing(false);
+    }
+
+    @Override
+    public void onCategoryFetched(String category, News n, int pos) {
+
+    }
+
+    @Override
+    public void onDataSaved(String lastMarkings) {
+
     }
 }
