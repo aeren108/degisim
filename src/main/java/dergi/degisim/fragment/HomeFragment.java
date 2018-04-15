@@ -30,12 +30,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
-import dergi.degisim.DataListener;
+import dergi.degisim.database.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
-import dergi.degisim.Utilities;
+import dergi.degisim.database.Utilities;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
 

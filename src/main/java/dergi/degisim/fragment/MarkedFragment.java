@@ -30,12 +30,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import dergi.degisim.DataListener;
+import dergi.degisim.database.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
-import dergi.degisim.Utilities;
+import dergi.degisim.database.Utilities;
 import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;

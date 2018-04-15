@@ -1,5 +1,5 @@
 // -*- @author aeren_pozitif  -*- //
-package dergi.degisim;
+package dergi.degisim.database;
 
 import dergi.degisim.news.News;
 
