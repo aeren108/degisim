@@ -83,8 +83,35 @@ public class Utilities {
 
                 Log.d("DB", "Fetching " + pos + " ,info: \n" + n.toString());
 
-                if (dataListener != null)
-                    dataListener.onDataFetched(n, pos);
+                synchronized (this) {
+                    if (dataListener != null)
+                        dataListener.onDataFetched(n, pos);
+                }
+            }
+        });
+    }
+
+    public void fetchData(final int pos) {
+
+        fs.collection("haberler").document(String.valueOf(pos)).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot ds) {
+                if (!ds.exists())
+                    return;
+
+                News n = new News();
+                n.setTitle(ds.getString("header"));
+                n.setContent(ds.getString("content"));
+                n.setUri(ds.getString("uri"));
+                n.setID(ds.getLong("id"));
+                n.setRead(ds.getLong("read"));
+
+                Log.d("DB", "Fetching " + pos + " ,info: \n" + n.toString());
+
+                synchronized (this) {
+                    if (dataListener != null)
+                        dataListener.onDataFetched(n, pos);
+                }
             }
         });
     }
@@ -110,8 +137,10 @@ public class Utilities {
 
                 Log.d("DB", "Fetching " + category + " category: " + pos + " info: \n" + n.toString());
 
-                if (dataListener != null)
-                    dataListener.onCategoryFetched(category, n, pos);
+                synchronized (this) {
+                    if (dataListener != null)
+                        dataListener.onCategoryFetched(category, n, pos);
+                }
             }
         });
     }
@@ -131,22 +160,25 @@ public class Utilities {
 
                 if (dataSnapshot.getValue().equals("empty")) {
                     buffer = "";
+                    lastMarkings = "";
                     allMarks = new ArrayList<>();
                 } else {
                     buffer = (String) dataSnapshot.getValue();
                     allMarks = Arrays.asList(buffer.split(","));
                     lastMarkings = buffer;
                 }
-
-                if (allMarks.contains(String.valueOf(n.getID()))) {
-                    Toast.makeText(context, "Bu haber zaten kaydedildi", Toast.LENGTH_SHORT).show();
-                    return;
+                if (n != null) { //if it is null, this method will give the bookmarked news
+                    if (allMarks.contains(String.valueOf(n.getID()))) {
+                        //Toast.makeText(context, "Bu haber zaten kaydedildi", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
                 }
 
-                ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
-
-                if (dataListener != null)
-                    dataListener.onDataSaved(lastMarkings);
+                synchronized (this) {
+                    if (dataListener != null)
+                        dataListener.onDataSaved(lastMarkings);
+                }
             }
 
             @Override
@@ -178,8 +210,10 @@ public class Utilities {
 
                 ref.child(usr.getUid()).child("markeds").setValue(buffer);
 
-                if (dataListener != null)
-                    dataListener.onDataSaved(lastMarkings);
+                synchronized (this) {
+                    if (dataListener != null)
+                        dataListener.onDataSaved(lastMarkings);
+                }
             }
 
             @Override

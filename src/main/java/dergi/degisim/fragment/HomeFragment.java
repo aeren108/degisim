@@ -4,7 +4,6 @@ package dergi.degisim.fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -22,6 +21,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,12 +29,14 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import dergi.degisim.database.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
+import dergi.degisim.database.DataListener;
 import dergi.degisim.database.Utilities;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
@@ -51,14 +53,15 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     private static ArrayList<News> items;
     public static ArrayList<News> catItems; //cat represents 'CATegory'
     public ArrayList<News> queryItems;
+    private String[] markeds;
 
     public Utilities u;
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
 
-    private int lastFetch;
-    private int lastCatFetch;
+    private volatile int lastFetch;
+    private volatile int lastCatFetch;
     public boolean isScrolling = false;
 
     private String currentCategory = "";
@@ -121,18 +124,31 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         }, new ItemClickListener() {
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
-                News n = adapter.getNews().get(pos);
-                adapter.getNews().get(pos).setSaved(!n.isSaved());
-                u.saveNews(n);
+                final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
 
-                Snackbar s = Snackbar.make(view, "Haber Kaydedildi", Snackbar.LENGTH_SHORT);
+                final News n = adapter.getNews().get(pos);
+                adapter.getNews().get(pos).setSaved(!n.isSaved());
+                String snackbar = "";
+
+                if (!n.isSaved()) {
+                    u.unsaveNews(n);
+                    snackbar = " Haber kaydedilenlerden çıkarıldı";
+                } else {
+                    u.saveNews(n);
+                    snackbar = "Haber kaydedildi";
+                }
+
+                final boolean saved = adapter.getNews().get(pos).isSaved();
+
+                Snackbar s = Snackbar.make(view, snackbar, Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (!lastMarkings.equals(""))
-                            FirebaseDatabase.getInstance().getReference("users").
-                            child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                        if (!saved)
+                            ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
                             child("markeds").setValue(lastMarkings);
+                        else
+                            u.saveNews(n);
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -161,6 +177,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
                     if (mode == 'd') {
                         for (int i = 0; i < LOAD_AMOUNT; i++) {
+                            Log.d("FETCH", "ID: " + lastFetch + 1 + i);
                             u.fetchData("id", lastFetch + 1 + i);
                         }
                     } else if (mode == 'c'){
@@ -187,49 +204,58 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             catItems = new ArrayList<>();
         queryItems = new ArrayList<>();
 
+        initMarkeds();
 
         adapter.setNews(items);
         rv.setAdapter(adapter);
         rv.invalidate();
     }
 
+    private void initMarkeds() {
+        u.saveNews(null);
+
+        if (!lastMarkings.equals("")) {
+            List<String> marks = Arrays.asList(lastMarkings.split(","));
+            for (String pos : marks) {
+                items.get(Integer.parseInt(pos)).setSaved(true);
+            }
+        }
+    }
+
     public void performSearchQuery(final String query) {
-        new Handler().post(new Runnable() {
+
+        FirebaseFirestore fs = FirebaseFirestore.getInstance();
+        final Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
+        q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
-            public void run() {
-                FirebaseFirestore fs = FirebaseFirestore.getInstance();
-                final Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
-                q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot documentSnapshots) {
-                        Log.d("QUERY", "Searching for: " + query);
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                Log.d("QUERY", "Searching for: " + query);
 
-                        for (DocumentSnapshot ds : documentSnapshots) {
-                            String toSearch = ds.getString("header").toLowerCase();
+                for (DocumentSnapshot ds : documentSnapshots) {
+                    String toSearch = ds.getString("header").toLowerCase();
 
-                            if (toSearch.contains(query.toLowerCase())) {
-                                Log.d("FOUND", "Found news: " + toSearch);
+                    if (toSearch.contains(query.toLowerCase())) {
+                        Log.d("FOUND", "Found news: " + toSearch);
 
-                                News n = new News();
-                                n.setTitle(ds.getString("header"));
-                                n.setContent(ds.getString("content"));
-                                n.setUri(ds.getString("uri"));
-                                n.setID(ds.getLong("id"));
-                                n.setRead(ds.getLong("read"));
+                        News n = new News();
+                        n.setTitle(ds.getString("header"));
+                        n.setContent(ds.getString("content"));
+                        n.setUri(ds.getString("uri"));
+                        n.setID(ds.getLong("id"));
+                        n.setRead(ds.getLong("read"));
 
-                                queryItems.add(n);
-                                adapter.setNews(queryItems);
-                                rv.invalidate();
-                                adapter.notifyDataSetChanged();
-                            }
-                        }
+                        queryItems.add(n);
+                        adapter.setNews(queryItems);
+                        rv.setAdapter(adapter);
+                        rv.invalidate();
+                        adapter.notifyDataSetChanged();
                     }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "Haberleri bulamadık :(", Toast.LENGTH_LONG).show();
-                    }
-                });
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Haberleri bulamadık :(", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -280,6 +306,8 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         rv.invalidate();
 
         lastFetch = pos;
+
+        Log.d("DB", "Last fetch: " + lastFetch);
         srl.setRefreshing(false);
     }
 

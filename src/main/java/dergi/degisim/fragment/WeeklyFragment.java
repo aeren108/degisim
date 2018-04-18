@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
@@ -109,6 +110,8 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }, new ItemClickListener() {
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
+                final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+
                 News n = adapter.getNews().get(pos);
                 u.saveNews(n);
 
@@ -117,8 +120,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     @Override
                     public void onClick(View v) {
                         if (!lastMarkings.equals(""))
-                            FirebaseDatabase.getInstance().getReference("users").
-                            child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                            ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
                             child("markeds").setValue(lastMarkings);
                     }
                 });

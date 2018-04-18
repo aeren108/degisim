@@ -175,10 +175,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
         replace(R.id.frame, home).commit();
-        navigation.setSelectedItemId(R.id.navigation_home);
+        //navigation.setSelectedItemId(R.id.navigation_home);
 
         home.performSearchQuery(query);
-        return false;
+        return true;
     }
 
     @Override

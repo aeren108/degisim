@@ -211,9 +211,10 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     empty.setVisibility(TextView.INVISIBLE);
                     markeds = Arrays.asList(allMarkeds.split(","));
                     Log.d("MARK", markeds.toString());
-                    Log.d("MARK", "Load is complete");
-                    if (pos < markeds.size())
-                        u.fetchData("id", Integer.parseInt(markeds.get(pos)));
+                    if (pos < markeds.size()) {
+                        u.fetchData(Integer.parseInt(markeds.get(pos)));
+                        lastFetch = pos;
+                    }
                 } else {
                     srl.setRefreshing(false);
                     empty.setVisibility(TextView.VISIBLE);
@@ -244,13 +245,9 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 return;
         }
 
-        items.add(n);
-        adapter.setNews(items);
-        rv.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        adapter.addItem(n);
         rv.invalidate();
 
-        lastFetch = pos;
         srl.setRefreshing(false);
     }
 

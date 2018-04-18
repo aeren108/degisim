@@ -60,6 +60,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
                 into(newsViewHolder.img);
             }
         });
+
+        if (news.get(position).isSaved()) {
+            newsViewHolder.btn.setImageResource(R.drawable.eye_icon);
+        } else {
+            newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
+        }
     }
 
     @Override
