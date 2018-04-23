@@ -71,7 +71,7 @@ public class SplashScreen extends AppCompatActivity {
             });
 
             try {
-                Thread.sleep(2000);
+                Thread.sleep(SPLASH_DURATION);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

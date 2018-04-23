@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -20,9 +19,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -53,7 +49,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     private static ArrayList<News> items;
     public static ArrayList<News> catItems; //cat represents 'CATegory'
     public ArrayList<News> queryItems;
-    private String[] markeds;
 
     public Utilities u;
 
@@ -67,7 +62,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     private String currentCategory = "";
     public char mode = 'd'; //d = default, c = category, q = search query
 
-    private String lastMarkings = "";
+    public static String lastMarkings = "";
 
     public HomeFragment() {
         u = new Utilities(getContext(), this);
@@ -75,12 +70,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
-
-    @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        final View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
 
@@ -124,31 +114,28 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         }, new ItemClickListener() {
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
-                final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                final List<String> marks = Arrays.asList(lastMarkings.split(","));
 
                 final News n = adapter.getNews().get(pos);
-                adapter.getNews().get(pos).setSaved(!n.isSaved());
                 String snackbar = "";
 
-                if (!n.isSaved()) {
-                    u.unsaveNews(n);
-                    snackbar = " Haber kaydedilenlerden çıkarıldı";
-                } else {
+                if (!marks.contains(String.valueOf(n.getID()))) {
                     u.saveNews(n);
                     snackbar = "Haber kaydedildi";
+                } else {
+                    u.unsaveNews(n);
+                    snackbar = " Haber kaydedilenlerden çıkarıldı";
                 }
-
-                final boolean saved = adapter.getNews().get(pos).isSaved();
 
                 Snackbar s = Snackbar.make(view, snackbar, Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (!saved)
-                            ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
-                            child("markeds").setValue(lastMarkings);
-                        else
+                        if (marks.contains(String.valueOf(n.getID()))) {
                             u.saveNews(n);
+                        } else {
+                            u.unsaveNews(n);
+                        }
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -204,22 +191,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             catItems = new ArrayList<>();
         queryItems = new ArrayList<>();
 
-        initMarkeds();
-
         adapter.setNews(items);
         rv.setAdapter(adapter);
         rv.invalidate();
-    }
 
-    private void initMarkeds() {
-        u.saveNews(null);
-
-        if (!lastMarkings.equals("")) {
-            List<String> marks = Arrays.asList(lastMarkings.split(","));
-            for (String pos : marks) {
-                items.get(Integer.parseInt(pos)).setSaved(true);
-            }
-        }
+        return view;
     }
 
     public void performSearchQuery(final String query) {

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -41,10 +42,12 @@ public class LoginActivity extends AppCompatActivity {
     private Button register;
     private GoogleSignInButton glogin;
 
+    private ImageButton back;
+
     private GoogleApiClient apiClient;
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    private final static int RC_SIGN_IN = 2002;
+    private final static int RC_SIGN_IN = 1302;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +59,17 @@ public class LoginActivity extends AppCompatActivity {
         login = findViewById(R.id.login_button);
         register = findViewById(R.id.register_btn);
         glogin = findViewById(R.id.signInButton);
+
+        back = findViewById(R.id.go_back);
+
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -175,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "RCODE: " + requestCode, Toast.LENGTH_SHORT).show();
 
         if (requestCode == RC_SIGN_IN) {
+            Toast.makeText(getApplicationContext(), "RC_CODE is true " + requestCode, Toast.LENGTH_SHORT).show();
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
@@ -186,7 +201,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        Log.d("AUTTH", "authenticating..");
+        Toast.makeText(getApplicationContext(), "Authenticating ", Toast.LENGTH_SHORT).show();
+        Log.d("AUTH", "authenticating..");
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         auth.signInWithCredential(credential)

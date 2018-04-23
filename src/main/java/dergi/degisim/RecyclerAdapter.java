@@ -40,32 +40,29 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
     }
 
     @Override
-    public void onBindViewHolder(final NewsViewHolder newsViewHolder, final int position) {
+    public void onBindViewHolder(final NewsViewHolder newsViewHolder, int position) {
         newsViewHolder.title.setText(news.get(position).getTitle());
 
+        //Try loading images from cache
         Picasso.with(context).load(news.get(position).getUri()).
         resize(980, 660).
         networkPolicy(NetworkPolicy.OFFLINE).
         into(newsViewHolder.img, new Callback() {
             @Override
             public void onSuccess() {
-
+                //Image is loaded from cache
             }
 
             @Override
             public void onError() {
-                Picasso.with(context).load(news.get(position).getUri()).
+                //Image is not in the cache, load from the internet
+
+                Picasso.with(context).load(news.get(newsViewHolder.getAdapterPosition()).getUri()).
                 resize(980, 660).
                 networkPolicy(NetworkPolicy.NO_CACHE).
                 into(newsViewHolder.img);
             }
         });
-
-        if (news.get(position).isSaved()) {
-            newsViewHolder.btn.setImageResource(R.drawable.eye_icon);
-        } else {
-            newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
-        }
     }
 
     @Override
@@ -114,7 +111,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         @Override
         public void onClick(View v) {
             Log.d("CLICK EVENT", "Clicked on:" + getAdapterPosition());
-            if (clickListener!= null)
+            if (clickListener != null)
                 clickListener.onClick(itemView, getAdapterPosition());
             else
                 Log.d("Null", "OnClickListener is null");

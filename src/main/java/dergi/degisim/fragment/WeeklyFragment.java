@@ -17,17 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import dergi.degisim.database.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
+import dergi.degisim.database.DataListener;
 import dergi.degisim.database.Utilities;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
@@ -110,18 +107,27 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }, new ItemClickListener() {
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
-                final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+                final ArrayList<String> marks = (ArrayList<String>) Arrays.asList(lastMarkings.split(","));
+                final News n = adapter.getNews().get(pos);
+                String snackbar = "";
 
-                News n = adapter.getNews().get(pos);
-                u.saveNews(n);
+                if (!marks.contains(String.valueOf(n.getID()))) {
+                    u.saveNews(n);
+                    snackbar = " Haber kaydedilenlerden çıkarıldı";
+                } else {
+                    u.unsaveNews(n);
+                    snackbar = "Haber kaydedildi";
+                }
 
-                Snackbar s = Snackbar.make(view, "Haber Kaydedildi", Snackbar.LENGTH_SHORT);
+                Snackbar s = Snackbar.make(view, snackbar, Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (!lastMarkings.equals(""))
-                            ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
-                            child("markeds").setValue(lastMarkings);
+                        if (marks.contains(String.valueOf(n.getID()))) {
+                            u.saveNews(n);
+                        } else {
+                            u.unsaveNews(n);
+                        }
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);

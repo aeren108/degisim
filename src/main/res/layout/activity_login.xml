@@ -1,13 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/login_screen"
     tools:context="dergi.degisim.auth.LoginActivity">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="280px"
+        android:layout_height="260px"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="35dp"
+        android:src="@drawable/d_icon" />
 
-    <include layout="@layout/content_login" />
+    <EditText
+        android:id="@+id/email_input"
+        style="@style/EditTextStle"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_above="@+id/password_input"
+        android:layout_alignLeft="@+id/password_input"
+        android:layout_alignStart="@+id/password_input"
+        android:layout_marginBottom="14dp"
+        android:ems="10"
+        android:hint="E-Posta"
+        android:inputType="textEmailAddress"
+        android:textSize="14dp"
+        android:selectAllOnFocus="false"
+        android:singleLine="true"
+        tools:layout_editor_absoluteX="84dp"
+        tools:layout_editor_absoluteY="172dp" />
 
+    <EditText
+        style="@style/EditTextStle"
+        android:id="@+id/password_input"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_above="@+id/login_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="22dp"
+        android:ems="10"
+        android:hint="Şifre"
+        android:inputType="textPassword"
+        android:textSize="14dp"
+        tools:layout_editor_absoluteX="84dp"
+        tools:layout_editor_absoluteY="232dp" />
 
-</android.support.design.widget.CoordinatorLayout>
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="110dp"
+        android:layout_height="60dp"
+        android:layout_above="@+id/or"
+        android:layout_alignLeft="@+id/password_input"
+        android:layout_alignStart="@+id/password_input"
+        android:layout_marginBottom="23dp"
+        android:backgroundTint="@color/colorAccent"
+        android:text="@string/s_login"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button" />
+
+    <Button
+        android:id="@+id/register_btn"
+        android:layout_width="110dp"
+        android:layout_height="60dp"
+        android:layout_alignEnd="@+id/password_input"
+        android:layout_alignRight="@+id/password_input"
+        android:layout_below="@+id/password_input"
+        android:backgroundTint="@color/login_color"
+        android:text="@string/s_register" />
+
+    <TextView
+        android:id="@+id/or"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/signInButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="21dp"
+        android:gravity="center"
+        android:text="@string/or"
+        android:textColor="@color/back_alpha"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <com.shobhitpuri.custombuttons.GoogleSignInButton
+        android:id="@+id/signInButton"
+        android:layout_width="175dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="35dp"
+        app:isDarkTheme="true" />
+
+    <ImageButton
+        android:id="@+id/go_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        app:srcCompat="@drawable/back_32px" />
+
+</RelativeLayout>

@@ -16,6 +16,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import dergi.degisim.R;
@@ -37,14 +39,28 @@ public class NewsPaper extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         String content = bundle.getString("content");
         String header = bundle.getString("header");
-        String uri = bundle.getString("uri");
+        final String uri = bundle.getString("uri");
         final long id = bundle.getLong("id");
 
-        Picasso.with(getApplicationContext()).load(uri).resize(800,600).into(img);
+        //Try loading images from cache
+        Picasso.with(getApplicationContext()).load(uri).networkPolicy(NetworkPolicy.OFFLINE).
+        resize(800,600).into(img, new Callback() {
+            @Override
+            public void onSuccess() {
+                //Image is loaded from cache
+            }
+
+            @Override
+            public void onError() {
+                //Image is not in the cache, load from internet
+                Picasso.with(getApplicationContext()).load(uri).
+                resize(800,600).
+                networkPolicy(NetworkPolicy.NO_CACHE).into(img);
+            }
+        });
         Log.d("CONTENT", content);
 
-        String html = "<font size='4'>" + content + "<font/> <br/> <br/> <br/>" +
-                      "<img src='https://www.universalorlando.com/web/k2/en/us/files/assets/spongebob-storepants-orlando-logo-b.png?imwidth=221'/> ";
+        String html = "<font size='4'>" + content + "<font/>";
 
         w.getSettings().setSupportZoom(true);
         w.loadData(html,"text/html; charset=utf-8", "utf-8");

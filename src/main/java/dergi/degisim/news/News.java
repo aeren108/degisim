@@ -8,9 +8,6 @@ public class News {
     private String content;
     private long id;
     private long read;
-    private boolean saved;
-
-    public static final String CONTENT_TOKEN = "*-";
 
     public News() {
 
@@ -60,13 +57,6 @@ public class News {
         this.read = read;
     }
 
-    public boolean isSaved() {
-        return saved;
-    }
-
-    public void setSaved(boolean saved) {
-        this.saved = saved;
-    }
 
     @Override
     public String toString() {

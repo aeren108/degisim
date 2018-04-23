@@ -7,9 +7,10 @@
 
     <ImageView
         android:id="@+id/splash_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:src="@drawable/d_logo"/>
+        android:layout_width="256px"
+        android:layout_height="240px"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/d_icon" />
 
 </RelativeLayout>

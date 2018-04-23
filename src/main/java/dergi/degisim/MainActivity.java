@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import dergi.degisim.auth.LoginActivity;
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public String[] categoryTitles;
 
     private FirebaseAuth auth = FirebaseAuth.getInstance();
+
+    public static ArrayList<Integer> markeds = new ArrayList<>();
 
     public static BottomNavigationView navigation;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -107,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         Intent intent = new Intent(getApplication(), LoginActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         startActivity(intent);
-                        finish();
                     } else {
                         FirebaseAuth.getInstance().signOut();
 
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         applicationList.setAdapter(applicationAdapter);
                         applicationList.invalidate();
                     }
+                    drawer.closeDrawers();
                 }
             }
         });
@@ -136,11 +139,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    /*Log.d("AUTH", "Couldn't logged in anonymously");
-                    AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
-                    alert.setTitle("Yetkilendirme Hatası");
-                    alert.setMessage("Anonim olarak giriş yapılamadı").setPositiveButton("Tamam", null);
-                    alert.show();*/
+                    Log.d("AUTH", "Couldn't logged in anonymously");
                 }
             });
         }
@@ -175,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
         replace(R.id.frame, home).commit();
-        //navigation.setSelectedItemId(R.id.navigation_home);
 
         home.performSearchQuery(query);
         return true;

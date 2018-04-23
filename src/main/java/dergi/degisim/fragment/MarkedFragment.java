@@ -30,19 +30,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import dergi.degisim.database.DataListener;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
-import dergi.degisim.database.Utilities;
 import dergi.degisim.auth.LoginActivity;
+import dergi.degisim.database.DataListener;
+import dergi.degisim.database.Utilities;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-//TODO: Implement recycler view
 public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
                                                         DataListener{
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -60,6 +59,7 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private boolean isScrolling;
     private int lastFetch;
+    private String lastMarkings = "";
 
     public MarkedFragment() {
         u = new Utilities(getContext(), this);
@@ -108,16 +108,14 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }, new ItemClickListener() {
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
-                News n = adapter.getNews().get(pos);
-                final String[] data = unsaveNews(n); //data array is storing mark datas before marking and after marking
+                final News n = adapter.getNews().get(pos);
+                u.unsaveNews(n);
 
-                Snackbar s = Snackbar.make(view, "Haber Kaydedildi", Snackbar.LENGTH_SHORT);
+                Snackbar s = Snackbar.make(view, "Haber kaydedilenlerden çıkarıldı", Snackbar.LENGTH_SHORT);
                 s.setAction("Geri Al", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        FirebaseDatabase.getInstance().getReference("users").
-                        child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
-                        child("markeds").setValue(data[1]);
+                        u.saveNews(n);
                     }
                 });
                 s.setActionTextColor(Color.YELLOW);
@@ -193,13 +191,6 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         return true;
     }
 
-    private String[] unsaveNews(News n) {
-        //TODO: Handle unsaving;
-
-        String[] markeds = new String[2];
-        return markeds;
-    }
-
     public void loadMarkedNews(final int pos) {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         DatabaseReference ref = db.getReference("users").child(String.valueOf(id)).child("markeds");
@@ -212,8 +203,13 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     markeds = Arrays.asList(allMarkeds.split(","));
                     Log.d("MARK", markeds.toString());
                     if (pos < markeds.size()) {
-                        u.fetchData(Integer.parseInt(markeds.get(pos)));
-                        lastFetch = pos;
+                        try {
+                            u.fetchData(Integer.parseInt(markeds.get(pos)));
+                            lastFetch = pos;
+                        } catch (NumberFormatException e) {
+                            srl.setRefreshing(false);
+                            empty.setVisibility(TextView.VISIBLE);
+                        }
                     }
                 } else {
                     srl.setRefreshing(false);
@@ -258,6 +254,6 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     @Override
     public void onDataSaved(String lastMarkings) {
-
+        this.lastMarkings = lastMarkings;
     }
 }

@@ -32,7 +32,7 @@ public class Utilities {
     private final FirebaseAuth auth;
     private final FirebaseDatabase db;
 
-    private static String lastMarkings;
+    private String lastMarkings;
 
     public Utilities(Context context) {
         fs = FirebaseFirestore.getInstance();
@@ -165,20 +165,23 @@ public class Utilities {
                 } else {
                     buffer = (String) dataSnapshot.getValue();
                     allMarks = Arrays.asList(buffer.split(","));
-                    lastMarkings = buffer;
-                }
-                if (n != null) { //if it is null, this method will give the bookmarked news
-                    if (allMarks.contains(String.valueOf(n.getID()))) {
-                        //Toast.makeText(context, "Bu haber zaten kaydedildi", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
+                    lastMarkings = n.getID() + "," + buffer;
                 }
 
                 synchronized (this) {
+                    if (n != null) { //if it is null, this method will give the bookmarked news
+                        if (allMarks.contains(String.valueOf(n.getID()))) {
+                            //This shows that the article is already bookmarked
+                            unsaveNews(n);
+                            return;
+                        }
+                        ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
+                    }
+
                     if (dataListener != null)
                         dataListener.onDataSaved(lastMarkings);
                 }
+
             }
 
             @Override
@@ -205,8 +208,9 @@ public class Utilities {
                 }
 
                 String buffer = (String) dataSnapshot.getValue();
+                buffer = buffer.replace(id+",", "");
                 lastMarkings = buffer;
-                buffer.replace(id+",", "");
+                Log.d("MARKED", "BUFFER: " + buffer);
 
                 ref.child(usr.getUid()).child("markeds").setValue(buffer);
 
