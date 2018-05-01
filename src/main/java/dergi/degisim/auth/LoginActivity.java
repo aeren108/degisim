@@ -93,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).
-        requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build();
+        requestIdToken("255664996103-s53firas9ma7a1agd11b9j7299b55dac.apps.googleusercontent.com").requestEmail().build();
 
         apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
             @Override
@@ -195,6 +195,7 @@ public class LoginActivity extends AppCompatActivity {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
             } catch (ApiException e) {
+                Toast.makeText(getApplicationContext(), "Failed to authenticate, error: "  + e ,Toast.LENGTH_SHORT).show();
                 Log.w("AUTH", "Google sign in failed", e);
             }
         }

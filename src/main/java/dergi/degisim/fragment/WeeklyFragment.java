@@ -259,7 +259,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     @Override
-    public void onDataSaved(String lastMarkings) {
+    public void onDataSaved(String lastMarkings, long id) {
         this.lastMarkings = lastMarkings;
     }
 }

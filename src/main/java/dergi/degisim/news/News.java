@@ -8,6 +8,7 @@ public class News {
     private String content;
     private long id;
     private long read;
+    private boolean isSaved;
 
     public News() {
 
@@ -55,6 +56,14 @@ public class News {
 
     public void setRead(long read) {
         this.read = read;
+    }
+
+    public boolean isSaved() {
+        return isSaved;
+    }
+
+    public void setSaved(boolean saved) {
+        isSaved = saved;
     }
 
 

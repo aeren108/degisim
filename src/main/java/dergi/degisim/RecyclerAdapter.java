@@ -10,14 +10,24 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import dergi.degisim.database.Utilities;
 import dergi.degisim.news.News;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsViewHolder> {
@@ -40,8 +50,41 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
     }
 
     @Override
-    public void onBindViewHolder(final NewsViewHolder newsViewHolder, int position) {
+    public void onBindViewHolder(final NewsViewHolder newsViewHolder, final int position) {
         newsViewHolder.title.setText(news.get(position).getTitle());
+
+        if (Utilities.checkLoggedIn()) {
+            final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
+            final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+
+            ref.child(usr.getUid()).child("markeds").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String marks;
+                    List<String> markeds;
+
+                    if (dataSnapshot.getValue().equals("empty")) {
+                        markeds = new ArrayList<>();
+                    } else {
+                        marks = (String) dataSnapshot.getValue();
+                        markeds = Arrays.asList(marks.split(","));
+                    }
+
+                    if (markeds.contains(String.valueOf(news.get(position).getID()))) {
+                        newsViewHolder.btn.setImageResource(R.drawable.eye_icon);
+                    } else {
+                        newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(context, "Haberi kaydedemedik :(", Toast.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            MainActivity.marks = new ArrayList<>();
+        }
 
         //Try loading images from cache
         Picasso.with(context).load(news.get(position).getUri()).

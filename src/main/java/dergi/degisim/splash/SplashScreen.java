@@ -5,12 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -23,13 +21,13 @@ import dergi.degisim.R;
 
 public class SplashScreen extends AppCompatActivity {
     public static final int SPLASH_DURATION = 2000;
-    private boolean done = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
+        //Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        //startActivity(intent);
         new Loader(getApplicationContext()).execute();
     }
 
@@ -49,24 +47,22 @@ public class SplashScreen extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             Query q = firestore.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
-            q.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                 @Override
-                public void onComplete(@NonNull final Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        final DocumentSnapshot ds = task.getResult().getDocuments().get(0);
-                        Picasso.with(getApplicationContext()).load(ds.getString("uri")).fetch(new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                Log.d("SPLASH", "Cachede the image of " + (ds.getLong("id") + 1) + ". article");
-                            }
+                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                    final DocumentSnapshot ds = queryDocumentSnapshots.getDocuments().get(0);
+                    Picasso.with(context).load(ds.getString("uri")).fetch(new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            Log.d("SPLASH", "Cached the image of " + (ds.getLong("id") + 1) + ". article");
+                        }
 
-                            @Override
-                            public void onError() {
-                                Log.e("SPLASH", "Error on caching");
-                            }
-                        });
+                        @Override
+                        public void onError() {
+                            Log.e("SPLASH", "Error on caching");
+                        }
+                    });
 
-                    }
                 }
             });
 

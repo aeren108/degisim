@@ -66,6 +66,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
     public HomeFragment() {
         u = new Utilities(getContext(), this);
+
     }
 
     @Override
@@ -306,7 +307,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     }
 
     @Override
-    public void onDataSaved(String lastMarkings) {
+    public void onDataSaved(String lastMarkings, long id) {
         this.lastMarkings = lastMarkings;
     }
 }

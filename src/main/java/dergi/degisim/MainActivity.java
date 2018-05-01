@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.drawer.ItemAdapter;
@@ -45,11 +46,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public String[] applicationTitles;
     public String[] categoryTitles;
 
-    private FirebaseAuth auth = FirebaseAuth.getInstance();
+    public static List<String> marks = null;
 
-    public static ArrayList<Integer> markeds = new ArrayList<>();
+    //private FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    public static BottomNavigationView navigation;
+    public BottomNavigationView navigation;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -130,8 +131,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        if (auth.getCurrentUser() == null) {
-            auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            FirebaseAuth.getInstance().signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                 @Override
                 public void onSuccess(AuthResult authResult) {
                     Log.d("AUTH", "Logged in anonymously");

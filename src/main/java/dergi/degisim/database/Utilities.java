@@ -51,8 +51,8 @@ public class Utilities {
         this.dataListener = dataListener;
     }
 
-    private boolean checkLoggedIn() {
-        FirebaseUser user = auth.getCurrentUser();
+    public static boolean checkLoggedIn() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null)
             return false;
         else if (user.isAnonymous())
@@ -106,6 +106,7 @@ public class Utilities {
                 n.setID(ds.getLong("id"));
                 n.setRead(ds.getLong("read"));
 
+
                 Log.d("DB", "Fetching " + pos + " ,info: \n" + n.toString());
 
                 synchronized (this) {
@@ -156,10 +157,9 @@ public class Utilities {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String buffer;
-                List<String> allMarks = null;
+                List<String> allMarks;
 
                 if (dataSnapshot.getValue().equals("empty")) {
-                    buffer = "";
                     lastMarkings = "";
                     allMarks = new ArrayList<>();
                 } else {
@@ -169,17 +169,17 @@ public class Utilities {
                 }
 
                 synchronized (this) {
-                    if (n != null) { //if it is null, this method will give the bookmarked news
+                    if (n != null) {
                         if (allMarks.contains(String.valueOf(n.getID()))) {
                             //This shows that the article is already bookmarked
                             unsaveNews(n);
                             return;
                         }
-                        ref.child(usr.getUid()).child("markeds").setValue(n.getID() + "," + buffer);
+                        ref.child(usr.getUid()).child("markeds").setValue(lastMarkings);
                     }
 
                     if (dataListener != null)
-                        dataListener.onDataSaved(lastMarkings);
+                        dataListener.onDataSaved(lastMarkings, n.getID());
                 }
 
             }
@@ -213,11 +213,6 @@ public class Utilities {
                 Log.d("MARKED", "BUFFER: " + buffer);
 
                 ref.child(usr.getUid()).child("markeds").setValue(buffer);
-
-                synchronized (this) {
-                    if (dataListener != null)
-                        dataListener.onDataSaved(lastMarkings);
-                }
             }
 
             @Override
