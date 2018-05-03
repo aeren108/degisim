@@ -2,7 +2,6 @@
 package dergi.degisim.news;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -23,7 +22,6 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 
 public class NewsPaper extends AppCompatActivity implements View.OnClickListener {
@@ -91,8 +89,6 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        startActivity(intent);
-        finish();
+        super.onBackPressed();
     }
 }

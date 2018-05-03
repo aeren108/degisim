@@ -70,6 +70,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         super.onViewCreated(view, savedInstanceState);
 
         ((MainActivity) getActivity()).categoryList.setOnItemClickListener(this);
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
@@ -188,11 +189,10 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
         rv.setAdapter(adapter);
         rv.invalidate();
 
-        for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++) {
+        for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
             u.fetchData("read", i);
         }
     }
-
 
     @Override
     public void onRefresh() {

@@ -69,10 +69,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
                         marks = (String) dataSnapshot.getValue();
                         markeds = Arrays.asList(marks.split(","));
                     }
-
-                    if (markeds.contains(String.valueOf(news.get(position).getID()))) {
-                        newsViewHolder.btn.setImageResource(R.drawable.eye_icon);
-                    } else {
+                    try {
+                        if (markeds.contains(String.valueOf(news.get(position).getID()))) {
+                            newsViewHolder.btn.setImageResource(R.drawable.eye_icon);
+                        } else {
+                            newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        Log.d("RV", "Index hatası");
                         newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
                     }
                 }
@@ -83,7 +87,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
                 }
             });
         } else {
-            MainActivity.marks = new ArrayList<>();
+            // TODO: 2.05.2018 Handle no user login 
         }
 
         //Try loading images from cache

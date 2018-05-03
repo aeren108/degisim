@@ -59,7 +59,6 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private boolean isScrolling;
     private int lastFetch;
-    private String lastMarkings = "";
 
     public MarkedFragment() {
         u = new Utilities(getContext(), this);
@@ -75,6 +74,7 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         super.onViewCreated(view, savedInstanceState);
 
         ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Kaydedilenler");
 
         if (items == null) {
             items = new ArrayList<>();
@@ -210,6 +210,9 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                             srl.setRefreshing(false);
                             empty.setVisibility(TextView.VISIBLE);
                         }
+                    } else {
+                        srl.setRefreshing(false);
+                        empty.setVisibility(TextView.VISIBLE);
                     }
                 } else {
                     srl.setRefreshing(false);
@@ -253,7 +256,7 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     @Override
-    public void onDataSaved(String lastMarkings, long id) {
-        this.lastMarkings = lastMarkings;
-    }
+    public void onDataSaved(String lastMarkings, long id) {}
+
+
 }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -54,6 +55,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
+    public static final String BUNDLE_KEY = "bundle";
 
     private volatile int lastFetch;
     private volatile int lastCatFetch;
@@ -62,18 +64,23 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     private String currentCategory = "";
     public char mode = 'd'; //d = default, c = category, q = search query
 
-    public static String lastMarkings = "";
+    public String lastMarkings = "";
 
     public HomeFragment() {
         u = new Utilities(getContext(), this);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_home, container, false);
+        return inflater.inflate(R.layout.fragment_home, container, false);
+    }
+
+    @Override
+    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
@@ -195,8 +202,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         adapter.setNews(items);
         rv.setAdapter(adapter);
         rv.invalidate();
-
-        return view;
     }
 
     public void performSearchQuery(final String query) {

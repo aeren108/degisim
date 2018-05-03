@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,8 +22,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +33,7 @@ import dergi.degisim.fragment.HomeFragment;
 import dergi.degisim.fragment.MarkedFragment;
 import dergi.degisim.fragment.WeeklyFragment;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, FirebaseAuth.AuthStateListener {
 
     public DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     public static List<String> marks = null;
 
-    //private FirebaseAuth auth = FirebaseAuth.getInstance();
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     public BottomNavigationView navigation;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -113,10 +114,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         startActivity(intent);
                     } else {
                         FirebaseAuth.getInstance().signOut();
-
-                        applicationAdapter.editItem(0, "Giriş Yap");
-                        applicationList.setAdapter(applicationAdapter);
-                        applicationList.invalidate();
                     }
                     drawer.closeDrawers();
                 }
@@ -131,19 +128,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            FirebaseAuth.getInstance().signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                @Override
-                public void onSuccess(AuthResult authResult) {
-                    Log.d("AUTH", "Logged in anonymously");
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d("AUTH", "Couldn't logged in anonymously");
-                }
-            });
-        }
+        auth.addAuthStateListener(this);
 
         HomeFragment home = new HomeFragment();
         getSupportFragmentManager().beginTransaction().
@@ -198,5 +183,56 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         navigation.setSelectedItemId(R.id.navigation_home);
 
         return true;
+    }
+
+    @Override
+    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+        FirebaseUser usr = firebaseAuth.getCurrentUser();
+        if (usr != null) {
+            if (usr.isAnonymous()) {
+                applicationAdapter.editItem(0, "Giriş Yap");
+                applicationList.setAdapter(applicationAdapter);
+                applicationList.invalidate();
+            } else {
+                applicationAdapter.editItem(0, "Çıkış Yap");
+                applicationList.setAdapter(applicationAdapter);
+                applicationList.invalidate();
+            }
+        } else {
+            applicationAdapter.editItem(0, "Giriş Yap");
+            applicationList.setAdapter(applicationAdapter);
+            applicationList.invalidate();
+
+            auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                @Override
+                public void onSuccess(AuthResult authResult) {
+                    Log.d("AUTH", "Logged in anonymously");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d("AUTH", "Couldn't logged in anonymously");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Fragment curFragment = getSupportFragmentManager().findFragmentById(R.id.frame);
+        if (curFragment instanceof HomeFragment) {
+            if (((HomeFragment) curFragment).mode == 'c') {
+                HomeFragment home = new HomeFragment();
+                getSupportFragmentManager().beginTransaction().
+                replace(R.id.frame, home).commit();
+            }
+        } if (curFragment instanceof WeeklyFragment) {
+            if (((WeeklyFragment) curFragment).catMode) {
+                WeeklyFragment weeklyFragment = new WeeklyFragment();
+                getSupportFragmentManager().beginTransaction().
+                replace(R.id.frame, weeklyFragment).commit();
+            }
+        } else
+            super.onBackPressed();
     }
 }
