@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.r0adkll.slidr.Slidr;
 import com.shobhitpuri.custombuttons.GoogleSignInButton;
 
 import dergi.degisim.MainActivity;
@@ -70,6 +71,8 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        Slidr.attach(this);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override

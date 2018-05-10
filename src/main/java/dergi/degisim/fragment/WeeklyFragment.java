@@ -2,7 +2,6 @@
 package dergi.degisim.fragment;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,15 +25,14 @@ import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.database.DataListener;
-import dergi.degisim.database.Utilities;
+import dergi.degisim.database.Util;
 import dergi.degisim.news.News;
-import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
 public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
                                                         AdapterView.OnItemClickListener,
-                                                        DataListener{
+                                                        DataListener, FragmentFeature{
 
     private RecyclerView rv;
     private RecyclerAdapter adapter;
@@ -41,10 +40,10 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private SwipeRefreshLayout srl;
 
-    private static ArrayList<News> items;
-    public static ArrayList<News> catItems; //cat represents 'CATegory'
+    private ArrayList<News> items;
+    public ArrayList<News> catItems; //cat represents 'CATegory'
 
-    private Utilities u;
+    private Util u;
 
     private int lastFetch;
     private int lastCatFetch;
@@ -56,7 +55,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private String lastMarkings = "";
 
     public WeeklyFragment() {
-        u = new Utilities(getContext(), this);
+        u = new Util(this);
     }
 
     @Override
@@ -68,9 +67,6 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(this);
-        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
@@ -87,22 +83,10 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
             public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
                 if (!catMode) {
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
-                    Intent intent = new Intent(getActivity(), NewsPaper.class);
-                    intent.putExtra("content", items.get(pos).getContent());
-                    intent.putExtra("header", items.get(pos).getTitle());
-                    intent.putExtra("uri", items.get(pos).getUri());
-                    intent.putExtra("id", items.get(pos).getID());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
+                    Util.openNewspaper(getActivity(), items, pos);
                 } else {
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
-                    Intent intent = new Intent(getActivity(), NewsPaper.class);
-                    intent.putExtra("content", catItems.get(pos).getContent());
-                    intent.putExtra("header", catItems.get(pos).getTitle());
-                    intent.putExtra("uri", catItems.get(pos).getUri());
-                    intent.putExtra("id", catItems.get(pos).getID());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
+                    Util.openNewspaper(getActivity(), catItems, pos);
                 }
             }
         }, new ItemClickListener() {
@@ -110,7 +94,7 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
                 final ArrayList<String> marks = (ArrayList<String>) Arrays.asList(lastMarkings.split(","));
                 final News n = adapter.getNews().get(pos);
-                String snackbar = "";
+                String snackbar;
 
                 if (!marks.contains(String.valueOf(n.getID()))) {
                     u.saveNews(n);
@@ -170,20 +154,9 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         rv.setHasFixedSize(true);
         rv.setLayoutManager(m);
-        rv.setItemViewCacheSize(20);
-        rv.setDrawingCacheEnabled(true);
-        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-        rv.invalidate();
 
-        if (items == null) {
-            items = new ArrayList<>();
-        }
-
-        items.clear();
-
-        if (catItems == null) {
-            catItems = new ArrayList<>();
-        }
+        items = new ArrayList<>();
+        catItems = new ArrayList<>();
 
         adapter.setNews(items);
         rv.setAdapter(adapter);
@@ -261,5 +234,20 @@ public class WeeklyFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onDataSaved(String lastMarkings, long id) {
         this.lastMarkings = lastMarkings;
+    }
+
+    @Override
+    public void onError(int errorType) {
+        if (errorType == Util.DATAFETCH_ERROR || errorType == Util.CATFETCH_ERROR) {
+            Toast.makeText(getContext(), "Veriler yüklenemiyor, interinitini bi' kontrol et", Toast.LENGTH_LONG).show();
+        } else if (errorType == Util.SAVE_ERROR || errorType == Util.UNSAVE_ERROR) {
+            Toast.makeText(getContext(), "Haber kaydedilemedi", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void loadFeature() {
+        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(this);
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
     }
 }

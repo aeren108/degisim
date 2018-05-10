@@ -1,7 +1,6 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,28 +33,28 @@ import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.database.DataListener;
-import dergi.degisim.database.Utilities;
+import dergi.degisim.database.Util;
 import dergi.degisim.news.News;
-import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-public class HomeFragment extends Fragment implements AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, DataListener {
+public class HomeFragment extends Fragment implements AdapterView.OnItemClickListener,
+                                                      SwipeRefreshLayout.OnRefreshListener,
+                                                      DataListener, FragmentFeature {
     private RecyclerView rv;
     private RecyclerAdapter adapter;
     private LinearLayoutManager m;
 
     private SwipeRefreshLayout srl;
 
-    private static ArrayList<News> items;
-    public static ArrayList<News> catItems; //cat represents 'CATegory'
+    private ArrayList<News> items;
+    public ArrayList<News> catItems; //cat represents 'CATegory'
     public ArrayList<News> queryItems;
 
-    public Utilities u;
+    public Util u;
 
     public static final int NEWS_AMOUNT = 3; //Temporary value
     public static final int LOAD_AMOUNT = 2; //Temporary value
-    public static final String BUNDLE_KEY = "bundle";
 
     private volatile int lastFetch;
     private volatile int lastCatFetch;
@@ -67,20 +66,18 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     public String lastMarkings = "";
 
     public HomeFragment() {
-        u = new Utilities(getContext(), this);
+        u = new Util(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setRetainInstance(true);
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
-        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
@@ -92,31 +89,13 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
             public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
                 if (mode == 'd') {
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
-                    Intent intent = new Intent(getActivity(), NewsPaper.class);
-                    intent.putExtra("content", items.get(pos).getContent());
-                    intent.putExtra("header", items.get(pos).getTitle());
-                    intent.putExtra("uri", items.get(pos).getUri());
-                    intent.putExtra("id", items.get(pos).getID());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
+                    Util.openNewspaper(getActivity(), items, pos);
                 } else if (mode == 'c'){
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
-                    Intent intent = new Intent(getActivity(), NewsPaper.class);
-                    intent.putExtra("content", catItems.get(pos).getContent());
-                    intent.putExtra("header", catItems.get(pos).getTitle());
-                    intent.putExtra("uri", catItems.get(pos).getUri());
-                    intent.putExtra("id", catItems.get(pos).getID());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
+                    Util.openNewspaper(getActivity(), catItems, pos);
                 } else {
                     Log.d("NEWS", "Clicked on: " + pos + ". item");
-                    Intent intent = new Intent(getActivity(), NewsPaper.class);
-                    intent.putExtra("content", queryItems.get(pos).getContent());
-                    intent.putExtra("header", queryItems.get(pos).getTitle());
-                    intent.putExtra("uri", queryItems.get(pos).getUri());
-                    intent.putExtra("id", queryItems.get(pos).getID());
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
+                    Util.openNewspaper(getActivity(), queryItems, pos);
                 }
             }
         }, new ItemClickListener() {
@@ -125,7 +104,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                 final List<String> marks = Arrays.asList(lastMarkings.split(","));
 
                 final News n = adapter.getNews().get(pos);
-                String snackbar = "";
+                String snackbar;
 
                 if (!marks.contains(String.valueOf(n.getID()))) {
                     u.saveNews(n);
@@ -180,7 +159,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
                             u.fetchCategory(currentCategory, lastCatFetch + i + 1);
                         }
                     }
-
                     isScrolling = false;
                 }
             }
@@ -193,15 +171,18 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
         rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         rv.invalidate();
 
-        if (items == null)
-            items = new ArrayList<>();
-        if (catItems == null)
-            catItems = new ArrayList<>();
+        items = new ArrayList<>();
+        catItems = new ArrayList<>();
         queryItems = new ArrayList<>();
 
         adapter.setNews(items);
         rv.setAdapter(adapter);
         rv.invalidate();
+
+        for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
+            if (u != null)
+                u.fetchData("id", i);
+        }
     }
 
     public void performSearchQuery(final String query) {
@@ -314,5 +295,20 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemClickLis
     @Override
     public void onDataSaved(String lastMarkings, long id) {
         this.lastMarkings = lastMarkings;
+    }
+
+    @Override
+    public void onError(int errorType) {
+        if (errorType == Util.DATAFETCH_ERROR || errorType == Util.CATFETCH_ERROR) {
+            Toast.makeText(getContext(), "Veriler yüklenemiyor, interinitini bi' kontrol et", Toast.LENGTH_LONG).show();
+        } else if (errorType == Util.SAVE_ERROR || errorType == Util.UNSAVE_ERROR) {
+            Toast.makeText(getContext(), "Haber kaydedilemedi", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void loadFeature() {
+        ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
     }
 }

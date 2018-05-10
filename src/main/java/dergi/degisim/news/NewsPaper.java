@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.r0adkll.slidr.Slidr;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -34,7 +35,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newspaper);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         w = findViewById(R.id.web);
         img = findViewById(R.id.toolbar_image);
         btn = findViewById(R.id.go_back_newspaper);
@@ -46,6 +47,8 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         String header = bundle.getString("header");
         final String uri = bundle.getString("uri");
         final long id = bundle.getLong("id");
+
+        Slidr.attach(this);
 
         //Try loading images from cache
         Picasso.with(getApplicationContext()).load(uri).networkPolicy(NetworkPolicy.OFFLINE).

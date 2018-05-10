@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import dergi.degisim.database.Utilities;
+import dergi.degisim.database.Util;
 import dergi.degisim.news.News;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsViewHolder> {
@@ -53,7 +53,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
     public void onBindViewHolder(final NewsViewHolder newsViewHolder, final int position) {
         newsViewHolder.title.setText(news.get(position).getTitle());
 
-        if (Utilities.checkLoggedIn()) {
+        if (Util.checkLoggedIn()) {
             final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
             final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
 

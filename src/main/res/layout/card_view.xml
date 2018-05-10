@@ -40,11 +40,14 @@
                 android:layout_alignBottom="@+id/img"
                 android:paddingLeft="7dp"
                 app:autoSizeTextType="uniform"
-                app:autoSizeMinTextSize="16sp"
-                app:autoSizeMaxTextSize="26sp"
+                app:autoSizeMinTextSize="22dp"
+                app:autoSizeMaxTextSize="28dp"
                 app:autoSizeStepGranularity="2sp"
                 android:paddingBottom="7dp"
-                android:fontFamily="monospace"/>
+                android:fontFamily="monospace"
+                android:gravity="bottom"
+                android:textAlignment="gravity"
+                android:layout_marginBottom="10dp" />
 
             <ImageButton
                 android:id="@+id/save_button"

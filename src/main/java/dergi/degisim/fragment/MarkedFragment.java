@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,18 +37,17 @@ import dergi.degisim.R;
 import dergi.degisim.RecyclerAdapter;
 import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.database.DataListener;
-import dergi.degisim.database.Utilities;
+import dergi.degisim.database.Util;
 import dergi.degisim.news.News;
-import dergi.degisim.news.NewsPaper;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
 public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
-                                                        DataListener{
+                                                        DataListener, FragmentFeature{
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private String id;
     private List<String> markeds;
-    private static List<News> items;
+    private List<News> items;
 
     private TextView empty;
     private RecyclerView rv;
@@ -55,13 +55,13 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private LinearLayoutManager m;
     private SwipeRefreshLayout srl;
 
-    private Utilities u;
+    private Util u;
 
     private boolean isScrolling;
     private int lastFetch;
 
     public MarkedFragment() {
-        u = new Utilities(getContext(), this);
+        u = new Util(this);
     }
 
     @Override
@@ -73,21 +73,9 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
-        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Kaydedilenler");
-
-        if (items == null) {
-            items = new ArrayList<>();
-
-            if (checkLoggedIn()) {
-                for (int i = 0; i <= HomeFragment.NEWS_AMOUNT; i++) {
-                    loadMarkedNews(i);
-                }
-            }
-        }
+        items = new ArrayList<>();
 
         empty = view.findViewById(R.id.empty);
-
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
 
@@ -97,13 +85,7 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
             @Override
             public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
                 Log.d("NEWS", "Clicked on: " + pos + ". item");
-                Intent intent = new Intent(getActivity(), NewsPaper.class);
-                intent.putExtra("content", items.get(pos).getContent());
-                intent.putExtra("header", items.get(pos).getTitle());
-                intent.putExtra("uri", items.get(pos).getUri());
-                intent.putExtra("id", items.get(pos).getID());
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
+                Util.openNewspaper(getActivity(), items, pos);
             }
         }, new ItemClickListener() {
             @Override
@@ -152,15 +134,8 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
             }
         });
 
-        if (checkLoggedIn())
-            for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
-                loadMarkedNews(i);
-
         rv.setHasFixedSize(true);
         rv.setLayoutManager(m);
-        rv.setItemViewCacheSize(20);
-        rv.setDrawingCacheEnabled(true);
-        rv.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         rv.invalidate();
 
         adapter.setNews(items);
@@ -258,5 +233,22 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onDataSaved(String lastMarkings, long id) {}
 
+    @Override
+    public void onError(int errorType) {
+        if (errorType == Util.DATAFETCH_ERROR || errorType == Util.CATFETCH_ERROR) {
+            Toast.makeText(getContext(), "Veriler yüklenemiyor, interinitini bi' kontrol et", Toast.LENGTH_LONG).show();
+        } else if (errorType == Util.SAVE_ERROR || errorType == Util.UNSAVE_ERROR) {
+            Toast.makeText(getContext(), "Haber kaydedilemedi", Toast.LENGTH_LONG).show();
+        }
+    }
 
+    @Override
+    public void loadFeature() {
+        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Kaydedilenler");
+
+        if (checkLoggedIn())
+            for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
+                loadMarkedNews(i);
+    }
 }
