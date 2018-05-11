@@ -28,14 +28,17 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Arrays;
 
+import dergi.degisim.adapter.ItemAdapter;
+import dergi.degisim.adapter.ViewPagerAdapter;
 import dergi.degisim.auth.LoginActivity;
-import dergi.degisim.drawer.ItemAdapter;
-import dergi.degisim.fragment.FragmentFeature;
 import dergi.degisim.fragment.HomeFragment;
+import dergi.degisim.fragment.MainFragment;
 import dergi.degisim.fragment.MarkedFragment;
 import dergi.degisim.fragment.WeeklyFragment;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener, FirebaseAuth.AuthStateListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener,
+                                                               MenuItem.OnActionExpandListener,
+                                                               FirebaseAuth.AuthStateListener {
 
     public DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
@@ -103,8 +106,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 Log.d("page",""+position);
                 navigation.getMenu().getItem(position).setChecked(true);
                 prevItem = navigation.getMenu().getItem(position);
+
                 Fragment curFragment = pagerAdapter.getItem(pager.getCurrentItem());
-                ((FragmentFeature) curFragment).loadFeature();
+                ((MainFragment) curFragment).onStartFeature();
             }
 
             @Override

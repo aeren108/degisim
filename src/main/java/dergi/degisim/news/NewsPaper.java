@@ -4,11 +4,10 @@ package dergi.degisim.news;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -29,18 +28,23 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
     private WebView w;
     private ImageView img;
     private ImageButton btn;
+    private FloatingActionButton saveBtn;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newspaper);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Slidr.attach(this);
+
         w = findViewById(R.id.web);
         img = findViewById(R.id.toolbar_image);
         btn = findViewById(R.id.go_back_newspaper);
+        saveBtn = findViewById(R.id.floatingSaveButton);
         btn.setOnClickListener(this);
-        setSupportActionBar(toolbar);
 
         Bundle bundle = getIntent().getExtras();
         String content = bundle.getString("content");
@@ -48,37 +52,32 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         final String uri = bundle.getString("uri");
         final long id = bundle.getLong("id");
 
-        Slidr.attach(this);
+        setTitle(header);
 
         //Try loading images from cache
         Picasso.with(getApplicationContext()).load(uri).networkPolicy(NetworkPolicy.OFFLINE).
         resize(800,600).into(img, new Callback() {
             @Override
             public void onSuccess() {
-                //Image is loaded from cache
+                //Image is loaded from cache and everyting is okay
             }
 
             @Override
             public void onError() {
-                //Image is not in the cache, load from internet
+                //Image is not in the cache, fetch from the internet
                 Picasso.with(getApplicationContext()).load(uri).
                 resize(800,600).
                 networkPolicy(NetworkPolicy.NO_CACHE).into(img);
             }
         });
-        Log.d("CONTENT", content);
 
         String html = "<font size='4'>" + content + "<font/>";
 
-        w.getSettings().setSupportZoom(true);
         w.loadData(html,"text/html; charset=utf-8", "utf-8");
-        w.getSettings().setJavaScriptEnabled(true);
+        w.getSettings().setSupportZoom(true);
         w.getSettings().setDefaultTextEncodingName("utf-8");
-        w.getSettings().setPluginState(WebSettings.PluginState.ON);
         w.setVerticalScrollBarEnabled(true);
         w.setHorizontalScrollBarEnabled(true);
-
-        setTitle(header);
 
         FirebaseFirestore.getInstance().collection("haberler").document(String.valueOf(id)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override

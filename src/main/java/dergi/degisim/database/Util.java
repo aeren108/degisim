@@ -34,11 +34,6 @@ public class Util {
     private final FirebaseAuth auth;
     private final FirebaseDatabase db;
 
-    public static final int DATAFETCH_ERROR = 0;
-    public static final int CATFETCH_ERROR = 1;
-    public static final int SAVE_ERROR = 2;
-    public static final int UNSAVE_ERROR = 3;
-
     private String lastMarkings;
 
     public Util() {
@@ -96,7 +91,7 @@ public class Util {
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (dataListener != null)
-                    dataListener.onError(DATAFETCH_ERROR);
+                    dataListener.onError(DataListener.DATAFETCH_ERROR);
             }
         });
     }
@@ -128,7 +123,7 @@ public class Util {
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (dataListener != null)
-                    dataListener.onError(DATAFETCH_ERROR);
+                    dataListener.onError(DataListener.DATAFETCH_ERROR);
             }
         });
     }
@@ -163,7 +158,7 @@ public class Util {
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (dataListener != null)
-                dataListener.onError(CATFETCH_ERROR);
+                dataListener.onError(DataListener.CATFETCH_ERROR);
             }
         });
     }
@@ -209,7 +204,7 @@ public class Util {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 if (dataListener != null)
-                    dataListener.onError(SAVE_ERROR);
+                    dataListener.onError(DataListener.SAVE_ERROR);
             }
         });
     }
@@ -241,7 +236,7 @@ public class Util {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 if (dataListener != null)
-                    dataListener.onError(UNSAVE_ERROR);
+                    dataListener.onError(DataListener.UNSAVE_ERROR);
             }
         });
     }

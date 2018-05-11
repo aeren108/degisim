@@ -9,10 +9,10 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <dergi.degisim.news.TouchyWebView
+    <dergi.degisim.news.SlidableWebView
         android:id="@+id/web"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </dergi.degisim.news.TouchyWebView>
+    </dergi.degisim.news.SlidableWebView>
 
 </android.support.v4.widget.NestedScrollView>

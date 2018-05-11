@@ -111,8 +111,7 @@ public class LoginActivity extends AppCompatActivity {
         String pd = pswd.getText().toString();
 
         if (auth.getCurrentUser() != null)
-            if (auth.getCurrentUser().isAnonymous())
-                auth.signOut();
+            auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
@@ -126,12 +125,13 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
+
                 finish();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Parola veya e-posta yanlış", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Parola veya e-posta doğru değil", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -226,18 +226,17 @@ public class LoginActivity extends AppCompatActivity {
 
                     FirebaseDatabase db = FirebaseDatabase.getInstance();
                     DatabaseReference ref = db.getReference("users");
-                    ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
+
+                    // Check if user is signing in first time
+                    boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                    if (isNew)
+                        //if user is new set bookmarks to empty
+                        ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
 
                     finish();
                 } else {
                     Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d("AUTH", "Failed authentication");
-                Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -1,26 +1,14 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,36 +17,13 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.RecyclerAdapter;
-import dergi.degisim.auth.LoginActivity;
-import dergi.degisim.database.DataListener;
 import dergi.degisim.database.Util;
 import dergi.degisim.news.News;
 
-import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
-
-public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
-                                                        DataListener, FragmentFeature{
-    private final FirebaseAuth auth = FirebaseAuth.getInstance();
-    private String id;
-    private List<String> markeds;
-    private List<News> items;
-
-    private TextView empty;
-    private RecyclerView rv;
-    private RecyclerAdapter adapter;
-    private LinearLayoutManager m;
-    private SwipeRefreshLayout srl;
-
-    private Util u;
-
-    private boolean isScrolling;
-    private int lastFetch;
+public class MarkedFragment extends MainFragment {
 
     public MarkedFragment() {
         u = new Util(this);
@@ -74,101 +39,11 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         super.onViewCreated(view, savedInstanceState);
 
         items = new ArrayList<>();
-
-        empty = view.findViewById(R.id.empty);
-        srl = view.findViewById(R.id.swiper);
-        srl.setOnRefreshListener(this);
-
-        m = new LinearLayoutManager(getContext());
-        rv = view.findViewById(R.id.list);
-        adapter = new RecyclerAdapter(getActivity(), new ItemClickListener() {
-            @Override
-            public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
-                Log.d("NEWS", "Clicked on: " + pos + ". item");
-                Util.openNewspaper(getActivity(), items, pos);
-            }
-        }, new ItemClickListener() {
-            @Override
-            public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
-                final News n = adapter.getNews().get(pos);
-                u.unsaveNews(n);
-
-                Snackbar s = Snackbar.make(view, "Haber kaydedilenlerden çıkarıldı", Snackbar.LENGTH_SHORT);
-                s.setAction("Geri Al", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        u.saveNews(n);
-                    }
-                });
-                s.setActionTextColor(Color.YELLOW);
-                s.show();
-            }
-
-        });
-
-        //SCROLL LISTENER
-        rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if (newState == SCROLL_STATE_TOUCH_SCROLL)
-                    isScrolling = true;
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                int totalItems = m.getItemCount();
-                int visibleItems = m.getChildCount();
-                int outItems = m.findFirstVisibleItemPosition();
-
-                if (isScrolling && (visibleItems + outItems) == totalItems) {
-
-                    for (int i = 0; i < HomeFragment.NEWS_AMOUNT; i++) {
-                        loadMarkedNews(lastFetch + 1 + i);
-                    }
-
-                    isScrolling = false;
-                }
-            }
-        });
-
-        rv.setHasFixedSize(true);
-        rv.setLayoutManager(m);
-        rv.invalidate();
-
-        adapter.setNews(items);
-        rv.setAdapter(adapter);
-        rv.invalidate();
-    }
-
-    private boolean checkLoggedIn() {
-        FirebaseUser user = auth.getCurrentUser();
-        if (user == null) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-            alert.setTitle("Kullanıcı Girişi Yok");
-            alert.setMessage("Kullanıcı girişi yapılmadığından dolayı kaydedilenler gösterilemiyor.");
-            alert.setPositiveButton("Tamam", null).setNegativeButton("Giriş Yap", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(getActivity(), LoginActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
-                    getActivity().finish();
-                }
-            }).show();
-            return false;
-        }
-
-        id = user.getUid();
-        Log.d("DEBUG", "ID: " + id);
-        return true;
     }
 
     public void loadMarkedNews(final int pos) {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference ref = db.getReference("users").child(String.valueOf(id)).child("markeds");
+        DatabaseReference ref = db.getReference("users").child(String.valueOf(ID)).child("markeds");
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -205,9 +80,9 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     @Override
     public void onRefresh() {
-        if (checkLoggedIn()) {
+        if (checkLoggedIn(true)) {
             items.clear();
-            for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
+            for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++)
                 loadMarkedNews(i);
         }
     }
@@ -234,21 +109,22 @@ public class MarkedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onDataSaved(String lastMarkings, long id) {}
 
     @Override
-    public void onError(int errorType) {
-        if (errorType == Util.DATAFETCH_ERROR || errorType == Util.CATFETCH_ERROR) {
-            Toast.makeText(getContext(), "Veriler yüklenemiyor, interinitini bi' kontrol et", Toast.LENGTH_LONG).show();
-        } else if (errorType == Util.SAVE_ERROR || errorType == Util.UNSAVE_ERROR) {
-            Toast.makeText(getContext(), "Haber kaydedilemedi", Toast.LENGTH_LONG).show();
-        }
+    public void loadFeature(int pos) {
+        loadMarkedNews(pos);
     }
 
     @Override
-    public void loadFeature() {
+    public void onStartFeature() {
         ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
         ((MainActivity) getActivity()).getSupportActionBar().setTitle("Kaydedilenler");
 
-        if (checkLoggedIn())
-            for (int i = 0; i < HomeFragment.LOAD_AMOUNT; i++)
+        if (checkLoggedIn(true))
+            for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++)
                 loadMarkedNews(i);
+    }
+
+    @Override
+    public void openNewspaper() {
+
     }
 }
