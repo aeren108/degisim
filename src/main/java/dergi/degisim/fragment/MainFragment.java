@@ -1,7 +1,6 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -22,12 +21,13 @@ import java.util.List;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.R;
 import dergi.degisim.adapter.RecyclerAdapter;
+import dergi.degisim.news.News;
 import dergi.degisim.util.DataListener;
 import dergi.degisim.util.Util;
-import dergi.degisim.news.News;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
+// TODO: 12.05.2018 Make 'LAST_MARKINGS' static
 public abstract class MainFragment extends Fragment implements DataListener, SwipeRefreshLayout.OnRefreshListener {
 
     protected FirebaseFirestore fs = FirebaseFirestore.getInstance();
@@ -48,8 +48,8 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     protected int lastCatFetch;
     public boolean isScrolling = false;
 
+    protected static String LAST_MARKINGS = "";
     protected String currentCategory = "";
-    protected String lastMarkings = "";
     protected String ID;
 
     public static final int LOAD_AMOUNT = 2; //Temporary value
@@ -64,7 +64,9 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        items = new ArrayList<News>();
+        items = new ArrayList<>();
+        catItems = new ArrayList<>();
+
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
 
@@ -80,17 +82,10 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
             @Override
             public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
                 final News n = adapter.getNews().get(pos);
-                u.unsaveNews(n);
 
-                Snackbar s = Snackbar.make(view, "Haber kaydedilenlerden çıkarıldı", Snackbar.LENGTH_SHORT);
-                s.setAction("Geri Al", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        u.saveNews(n);
-                    }
-                });
-                s.setActionTextColor(Color.YELLOW);
-                s.show();
+                // Just calling saveNews() func. because it checks if news is bookmarkde or not,
+                // if news is already bookmarked it calls unsave() func
+                u.saveNews(n);
             }
 
         });
@@ -126,7 +121,6 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         adapter.setNews(items);
         rv.setAdapter(adapter);
         rv.setLayoutManager(m);
-        rv.invalidate();
     }
 
     public abstract void returnDefault();
@@ -136,21 +130,64 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     public abstract void onStartFeature();
 
     @Override
-    public abstract void onRefresh();
-
-    @Override
     public void onDataFetched(News n, int pos) {
+        for (News news : items) {
+            if (news.getID() == n.getID())
+                return;
+        }
 
+        items.add(n);
+        adapter.notifyDataSetChanged();
+
+        lastFetch = pos;
+
+        Log.d("fetch", "Position: " + pos + "ast fetch: " + lastFetch);
+        srl.setRefreshing(false);
     }
 
     @Override
     public void onCategoryFetched(String category, News n, int pos) {
+        for (News news : catItems) {
+            if (news.getID() == n.getID())
+                return;
+        }
 
+        catItems.add(n);
+        adapter.setNews(catItems);
+
+        currentCategory = category;
+        lastCatFetch = pos;
+
+        Log.i("cat_fetch", "Category " + category + " position: " + pos + "\n last category fetch: " + lastCatFetch);
+        srl.setRefreshing(false);
     }
 
     @Override
-    public void onDataSaved(String lastMarkings, long id) {
+    public void onDataSaved(String lastMarkings, final News n) {
+        MainFragment.LAST_MARKINGS = lastMarkings;
 
+        Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi.", Snackbar.LENGTH_SHORT);
+        snackbar.setAction("GERİ AL", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                u.unsaveNews(n);
+            }
+        });
+        snackbar.show();
+    }
+
+    @Override
+    public void onDataUnsaved(String lastMarkings, final News n) {
+        MainFragment.LAST_MARKINGS = lastMarkings;
+
+        Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi.", Snackbar.LENGTH_SHORT);
+        snackbar.setAction("GERİ AL", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                u.saveNews(n);
+            }
+        });
+        snackbar.show();
     }
 
     @Override

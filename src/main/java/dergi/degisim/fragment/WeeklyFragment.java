@@ -9,12 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
-import java.util.ArrayList;
-
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.util.Util;
-import dergi.degisim.news.News;
 
 public class WeeklyFragment extends MainFragment implements AdapterView.OnItemClickListener {
 
@@ -33,8 +30,6 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        catItems = new ArrayList<News>();
 
         for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
             u.fetchData("read", i);
@@ -72,45 +67,6 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
         adapter.setNews(catItems);
 
         ((MainActivity)getActivity()).drawer.closeDrawers();
-    }
-
-    @Override
-    public void onDataFetched(News n, int pos) {
-        for (News news : items) {
-            if (news.getID() == n.getID())
-                return;
-        }
-
-        items.add(n);
-        adapter.setNews(items);
-        adapter.notifyDataSetChanged();
-        rv.invalidate();
-
-        lastFetch = pos;
-        srl.setRefreshing(false);
-    }
-
-    @Override
-    public void onCategoryFetched(String category, News n, int pos) {
-        for (News news : catItems) {
-            if (news.getID() == n.getID())
-                return;
-        }
-
-        catItems.add(n);
-        adapter.setNews(catItems);
-        rv.invalidate();
-        adapter.notifyDataSetChanged();
-
-        currentCategory = category;
-        lastCatFetch = pos;
-
-        srl.setRefreshing(false);
-    }
-
-    @Override
-    public void onDataSaved(String lastMarkings, long id) {
-        this.lastMarkings = lastMarkings;
     }
 
     @Override

@@ -196,7 +196,7 @@ public class Util {
                     }
 
                     if (dataListener != null)
-                        dataListener.onDataSaved(lastMarkings, n.getID());
+                        dataListener.onDataSaved(lastMarkings, n);
                 }
 
             }
@@ -231,6 +231,11 @@ public class Util {
                 Log.d("MARKED", "BUFFER: " + buffer);
 
                 ref.child(usr.getUid()).child("markeds").setValue(buffer);
+
+                synchronized (this) {
+                    if (dataListener != null)
+                        dataListener.onDataUnsaved(lastMarkings, n);
+                }
             }
 
             @Override

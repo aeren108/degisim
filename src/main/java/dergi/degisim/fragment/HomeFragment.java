@@ -46,8 +46,6 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
 
         ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
 
-        items = new ArrayList<News>();
-        catItems = new ArrayList<News>();
         queryItems = new ArrayList<News>();
 
         for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
@@ -129,43 +127,6 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
         } else {
             srl.setRefreshing(false);
         }
-    }
-
-    @Override
-    public void onDataFetched(News n, int pos) {
-        for (News news : items) {
-            if (news.getID() == n.getID())
-                return;
-        }
-
-        adapter.addItem(n);
-        rv.invalidate();
-
-        lastFetch = pos;
-
-        Log.d("DB", "Last fetch: " + lastFetch);
-        srl.setRefreshing(false);
-    }
-
-    @Override
-    public void onCategoryFetched(String category, News n, int pos) {
-        for (News news : catItems) {
-            if (news.getID() == n.getID())
-                return;
-        }
-
-        catItems.add(n);
-        adapter.setNews(catItems);
-
-        currentCategory = category;
-        lastCatFetch = pos;
-
-        srl.setRefreshing(false);
-    }
-
-    @Override
-    public void onDataSaved(String lastMarkings, long id) {
-        this.lastMarkings = lastMarkings;
     }
 
     @Override

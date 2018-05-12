@@ -18,14 +18,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.auth.LoginActivity;
-import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
+import dergi.degisim.util.Util;
 
 public class MarkedFragment extends MainFragment {
 
@@ -44,8 +43,7 @@ public class MarkedFragment extends MainFragment {
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        items = new ArrayList<News>();
+        
         empty = view.findViewById(R.id.empty);
     }
 
@@ -109,29 +107,13 @@ public class MarkedFragment extends MainFragment {
     }
 
     @Override
-    public void onDataFetched(News n, int pos) {
-        for (News nw : items) {
-            if (nw.getID() == n.getID())
-                return;
-        }
-
-        adapter.addItem(n);
-        rv.invalidate();
-
-        srl.setRefreshing(false);
-    }
-
-    @Override
     public void onCategoryFetched(String category, News n, int pos) {
-
+        //There is no categorization feature in MarkedFragment so do nothing
     }
-
-    @Override
-    public void onDataSaved(String lastMarkings, long id) {}
 
     @Override
     public void returnDefault() {
-        // TODO: 12.05.2018 Handle return func. of marked fragment
+        // TODO: 12.05.2018 Handle returnDefault func. of marked fragment
     }
 
     @Override
