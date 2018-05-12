@@ -23,12 +23,15 @@ import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import dergi.degisim.R;
+import dergi.degisim.util.Util;
 
 public class NewsPaper extends AppCompatActivity implements View.OnClickListener {
     private WebView w;
     private ImageView img;
     private ImageButton btn;
     private FloatingActionButton saveBtn;
+
+    private Util u;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -40,6 +43,8 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         setSupportActionBar(toolbar);
         Slidr.attach(this);
 
+        u = new Util();
+
         w = findViewById(R.id.web);
         img = findViewById(R.id.toolbar_image);
         btn = findViewById(R.id.go_back_newspaper);
@@ -47,10 +52,22 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         btn.setOnClickListener(this);
 
         Bundle bundle = getIntent().getExtras();
-        String content = bundle.getString("content");
-        String header = bundle.getString("header");
+        final String content = bundle.getString("content");
+        final String header = bundle.getString("header");
         final String uri = bundle.getString("uri");
         final long id = bundle.getLong("id");
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Util.checkLoggedIn()) {
+                    News n = new News(uri, header, content);
+                    n.setID(id);
+
+                    u.saveNews(n);
+                }
+            }
+        });
 
         setTitle(header);
 

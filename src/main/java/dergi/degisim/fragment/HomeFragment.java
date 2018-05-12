@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.database.Util;
+import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
 public class HomeFragment extends MainFragment implements AdapterView.OnItemClickListener {
@@ -46,9 +46,9 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
 
         ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
 
-        items = new ArrayList<>();
-        catItems = new ArrayList<>();
-        queryItems = new ArrayList<>();
+        items = new ArrayList<News>();
+        catItems = new ArrayList<News>();
+        queryItems = new ArrayList<News>();
 
         for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
             if (u != null)
@@ -94,6 +94,7 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
         mode = 'q';
     }
 
+    //onClick func. for list items in catergorylist.
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         String[] titles = ((MainActivity)getActivity()).categoryTitles;
@@ -168,6 +169,14 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
     }
 
     @Override
+    public void returnDefault() {
+        adapter.setNews(items);
+        mode = 'd';
+
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
+    }
+
+    @Override
     public void loadFeature(int pos) {
         if (mode == 'c') {
             u.fetchCategory(currentCategory, pos);
@@ -179,10 +188,5 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
     @Override
     public void onStartFeature() {
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
-    }
-
-    @Override
-    public void openNewspaper() {
-
     }
 }

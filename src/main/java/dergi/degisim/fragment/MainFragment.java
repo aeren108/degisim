@@ -1,9 +1,6 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,11 +11,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -27,14 +22,12 @@ import java.util.List;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.R;
 import dergi.degisim.adapter.RecyclerAdapter;
-import dergi.degisim.auth.LoginActivity;
-import dergi.degisim.database.DataListener;
-import dergi.degisim.database.Util;
+import dergi.degisim.util.DataListener;
+import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-// TODO: 11.05.2018 Make other fragments to extend this class to reduce code duplication
 public abstract class MainFragment extends Fragment implements DataListener, SwipeRefreshLayout.OnRefreshListener {
 
     protected FirebaseFirestore fs = FirebaseFirestore.getInstance();
@@ -44,7 +37,6 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     protected List<News> catItems;
     protected List<String> markeds;
 
-    protected TextView empty;
     protected RecyclerView rv;
     protected RecyclerAdapter adapter;
     protected LinearLayoutManager m;
@@ -75,7 +67,6 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         items = new ArrayList<News>();
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
-        empty = view.findViewById(R.id.empty);
 
         m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
@@ -83,7 +74,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
             @Override
             public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
                 Log.d("NEWS", "Clicked on: " + pos + ". item");
-                Util.openNewspaper(getActivity(), items, pos);
+                Util.openNewspaper(getActivity(), adapter.getNews(), pos);
             }
         }, new ItemClickListener() {
             @Override
@@ -138,36 +129,14 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         rv.invalidate();
     }
 
-    protected boolean checkLoggedIn(boolean showAlert) {
-        FirebaseUser user = auth.getCurrentUser();
-        if (user == null) {
-            if (showAlert) {
-                AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-                alert.setTitle("Kullanıcı Girişi Yok");
-                alert.setMessage("Kullanıcı girişi yapılmadığından dolayı kaydedilenler gösterilemiyor.");
-                alert.setPositiveButton("Tamam", null).setNegativeButton("Giriş Yap", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(getActivity(), LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        startActivity(intent);
-                        getActivity().finish();
-                    }
-                }).show();
-            }
-            return false;
-        }
-
-        ID = user.getUid();
-        Log.d("DEBUG", "ID: " + ID);
-        return true;
-    }
+    public abstract void returnDefault();
 
     public abstract void loadFeature(int pos);
 
     public abstract void onStartFeature();
 
-    public abstract void openNewspaper();
+    @Override
+    public abstract void onRefresh();
 
     @Override
     public void onDataFetched(News n, int pos) {
@@ -192,7 +161,4 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
             Toast.makeText(getContext(), "Haber kaydedilemedi", Toast.LENGTH_LONG).show();
         }
     }
-
-    @Override
-    public abstract void onRefresh();
 }

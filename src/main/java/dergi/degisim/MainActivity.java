@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -195,14 +194,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onMenuItemActionCollapse(MenuItem item) {
-        pager.setCurrentItem(0);
         Fragment curFragment = pagerAdapter.getItem(pager.getCurrentItem());
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.detach(curFragment);
-        ft.attach(curFragment);
-        ft.commit();
-        ((HomeFragment)curFragment).mode = 'd';
-        navigation.setSelectedItemId(R.id.navigation_home);
+        if (curFragment instanceof HomeFragment) {
+            ((HomeFragment) curFragment).returnDefault();
+        }
 
         return true;
     }
@@ -244,15 +239,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Fragment curFragment = pagerAdapter.getItem(pager.getCurrentItem());
 
         if (curFragment instanceof HomeFragment) {
-            if (((HomeFragment) curFragment).mode == 'c') {
-                pager.setCurrentItem(0);
-            } else
-                super.onBackPressed();
-        } if (curFragment instanceof WeeklyFragment) {
+            if (((HomeFragment) curFragment).mode == 'c' ||
+                ((HomeFragment) curFragment).mode == 'q') {
+
+                ((HomeFragment) curFragment).returnDefault();
+            }
+        } else if (curFragment instanceof WeeklyFragment) {
             if (((WeeklyFragment) curFragment).catMode) {
-                pager.setCurrentItem(2);
-            } else
-                super.onBackPressed();
+                ((WeeklyFragment) curFragment).returnDefault();
+            }
         } else
             super.onBackPressed();
     }

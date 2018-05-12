@@ -29,7 +29,7 @@ import java.util.List;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.R;
-import dergi.degisim.database.Util;
+import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsViewHolder> {

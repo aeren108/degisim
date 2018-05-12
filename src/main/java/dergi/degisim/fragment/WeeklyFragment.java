@@ -9,9 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
+import java.util.ArrayList;
+
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.database.Util;
+import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
 public class WeeklyFragment extends MainFragment implements AdapterView.OnItemClickListener {
@@ -31,6 +33,8 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        catItems = new ArrayList<News>();
 
         for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
             u.fetchData("read", i);
@@ -110,6 +114,14 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
     }
 
     @Override
+    public void returnDefault() {
+        adapter.setNews(items);
+        catMode = false;
+
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
+    }
+
+    @Override
     public void loadFeature(int pos) {
         if (catMode) {
             u.fetchCategory(currentCategory, pos);
@@ -122,10 +134,5 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
     public void onStartFeature() {
         ((MainActivity) getActivity()).categoryList.setOnItemClickListener(this);
         ((MainActivity) getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
-    }
-
-    @Override
-    public void openNewspaper() {
-
     }
 }

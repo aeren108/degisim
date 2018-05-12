@@ -1,6 +1,9 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -20,10 +23,14 @@ import java.util.Arrays;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.database.Util;
+import dergi.degisim.auth.LoginActivity;
+import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
 public class MarkedFragment extends MainFragment {
+
+    //A TextView which shows up when there is no bookmarked news
+    private TextView empty;
 
     public MarkedFragment() {
         u = new Util(this);
@@ -38,7 +45,8 @@ public class MarkedFragment extends MainFragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        items = new ArrayList<>();
+        items = new ArrayList<News>();
+        empty = view.findViewById(R.id.empty);
     }
 
     public void loadMarkedNews(final int pos) {
@@ -80,10 +88,23 @@ public class MarkedFragment extends MainFragment {
 
     @Override
     public void onRefresh() {
-        if (checkLoggedIn(true)) {
+        if (Util.checkLoggedIn()) {
             items.clear();
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++)
                 loadMarkedNews(i);
+        } else {
+            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+            alert.setTitle("Kullanıcı Girişi Yok");
+            alert.setMessage("Kullanıcı girişi yapılmadığından dolayı kaydedilenler gösterilemiyor.");
+            alert.setPositiveButton("Tamam", null).setNegativeButton("Giriş Yap", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    startActivity(intent);
+                    getActivity().finish();
+                }
+            }).show();
         }
     }
 
@@ -109,6 +130,11 @@ public class MarkedFragment extends MainFragment {
     public void onDataSaved(String lastMarkings, long id) {}
 
     @Override
+    public void returnDefault() {
+        // TODO: 12.05.2018 Handle return func. of marked fragment
+    }
+
+    @Override
     public void loadFeature(int pos) {
         loadMarkedNews(pos);
     }
@@ -118,13 +144,22 @@ public class MarkedFragment extends MainFragment {
         ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
         ((MainActivity) getActivity()).getSupportActionBar().setTitle("Kaydedilenler");
 
-        if (checkLoggedIn(true))
+        if (Util.checkLoggedIn()) {
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++)
                 loadMarkedNews(i);
-    }
-
-    @Override
-    public void openNewspaper() {
-
+        } else {
+            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+            alert.setTitle("Kullanıcı Girişi Yok");
+            alert.setMessage("Kullanıcı girişi yapılmadığından dolayı kaydedilenler gösterilemiyor.");
+            alert.setPositiveButton("Tamam", null).setNegativeButton("Giriş Yap", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    startActivity(intent);
+                    getActivity().finish();
+                }
+            }).show();
+        }
     }
 }
