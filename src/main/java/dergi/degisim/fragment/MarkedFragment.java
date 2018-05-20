@@ -28,6 +28,7 @@ import dergi.degisim.util.Util;
 
 public class MarkedFragment extends MainFragment {
 
+
     //A TextView which shows up when there is no bookmarked news
     private TextView empty;
 
@@ -43,7 +44,7 @@ public class MarkedFragment extends MainFragment {
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         empty = view.findViewById(R.id.empty);
     }
 
@@ -54,7 +55,7 @@ public class MarkedFragment extends MainFragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String allMarkeds = (String) dataSnapshot.getValue();
-                if (!allMarkeds.equals("empty")) {
+                if (!allMarkeds.equals("empty") || !allMarkeds.isEmpty()) {
                     empty.setVisibility(TextView.INVISIBLE);
                     markeds = Arrays.asList(allMarkeds.split(","));
                     Log.d("MARK", markeds.toString());
@@ -118,7 +119,9 @@ public class MarkedFragment extends MainFragment {
 
     @Override
     public void loadFeature(int pos) {
-        loadMarkedNews(pos);
+        if (Util.checkLoggedIn()) {
+            loadMarkedNews(pos);
+        }
     }
 
     @Override

@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ import dergi.degisim.util.Util;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
-// TODO: 12.05.2018 Make 'LAST_MARKINGS' static
 public abstract class MainFragment extends Fragment implements DataListener, SwipeRefreshLayout.OnRefreshListener {
 
     protected FirebaseFirestore fs = FirebaseFirestore.getInstance();
@@ -50,19 +50,22 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
 
     protected static String LAST_MARKINGS = "";
     protected String currentCategory = "";
-    protected String ID;
+    protected static String ID;
 
     public static final int LOAD_AMOUNT = 2; //Temporary value
     public static final int NEWS_AMOUNT = 3; //Temporary value
 
     public MainFragment() {
-        u = new Util();
-        u.setDataListener(this);
+        u = new Util(this);
     }
 
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (Util.checkLoggedIn()) {
+            MainFragment.ID = auth.getCurrentUser().getUid();
+        }
 
         items = new ArrayList<>();
         catItems = new ArrayList<>();
@@ -121,6 +124,10 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         adapter.setNews(items);
         rv.setAdapter(adapter);
         rv.setLayoutManager(m);
+
+        for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
+            loadFeature(i);
+        }
     }
 
     public abstract void returnDefault();

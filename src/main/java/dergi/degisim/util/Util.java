@@ -52,13 +52,7 @@ public class Util {
 
     public static boolean checkLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null)
-            return false;
-        else if (user.isAnonymous())
-            return false;
-
-        Log.d("DB", "ID: " + user.getUid());
-        return true;
+        return user != null && !user.isAnonymous();
     }
 
     public void fetchData(String orderBy, final int pos) {
@@ -90,6 +84,7 @@ public class Util {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                e.printStackTrace();
                 if (dataListener != null)
                     dataListener.onError(DataListener.DATAFETCH_ERROR);
             }

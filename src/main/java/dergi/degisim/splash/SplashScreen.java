@@ -5,10 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -18,6 +22,8 @@ import com.squareup.picasso.Picasso;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
+import dergi.degisim.auth.LoginActivity;
+import dergi.degisim.util.Util;
 
 public class SplashScreen extends AppCompatActivity {
     public static final int SPLASH_DURATION = 2000;
@@ -26,8 +32,7 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        //Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        //startActivity(intent);
+
         new Loader(getApplicationContext()).execute();
     }
 

@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onQueryTextSubmit(String query) {
         pager.setCurrentItem(0);
 
-        Fragment curFragment = pagerAdapter.getItem(pager.getCurrentItem());
+        Fragment curFragment = pagerAdapter.getItem(0);
         ((HomeFragment) curFragment).performSearchQuery(query);
         return true;
     }

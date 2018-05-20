@@ -32,7 +32,7 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
     public char mode = 'd';
 
     public HomeFragment() {
-        u = new Util(this);
+        super();
     }
 
     @Override
@@ -47,11 +47,6 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
         ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
 
         queryItems = new ArrayList<News>();
-
-        for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
-            if (u != null)
-                u.fetchData("id", i);
-        }
     }
 
     public void performSearchQuery(final String query) {
@@ -144,6 +139,11 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
         } else if (mode == 'd'){
             u.fetchData("id", pos);
         }
+    }
+
+    @Override
+    public void onDataFetched(News n, int pos) {
+        super.onDataFetched(n, pos);
     }
 
     @Override
