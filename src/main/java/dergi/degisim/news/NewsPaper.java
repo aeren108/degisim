@@ -5,12 +5,15 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,12 +29,13 @@ import dergi.degisim.R;
 import dergi.degisim.util.Util;
 
 public class NewsPaper extends AppCompatActivity implements View.OnClickListener {
-    private WebView w;
+    private LinearLayout ll;
     private ImageView img;
     private ImageButton btn;
     private FloatingActionButton saveBtn;
 
     private Util u;
+    private String content;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -45,17 +49,20 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
 
         u = new Util();
 
-        w = findViewById(R.id.web);
+        ll = findViewById(R.id.wrapper);
         img = findViewById(R.id.toolbar_image);
         btn = findViewById(R.id.go_back_newspaper);
         saveBtn = findViewById(R.id.floatingSaveButton);
+
         btn.setOnClickListener(this);
 
         Bundle bundle = getIntent().getExtras();
-        final String content = bundle.getString("content");
+        content = bundle.getString("content");
         final String header = bundle.getString("header");
         final String uri = bundle.getString("uri");
         final long id = bundle.getLong("id");
+
+        prepareContent();
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,14 +95,6 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
             }
         });
 
-        String html = "<font size='4'>" + content + "<font/>";
-
-        w.loadData(html,"text/html; charset=utf-8", "utf-8");
-        w.getSettings().setSupportZoom(true);
-        w.getSettings().setDefaultTextEncodingName("utf-8");
-        w.setVerticalScrollBarEnabled(true);
-        w.setHorizontalScrollBarEnabled(true);
-
         FirebaseFirestore.getInstance().collection("haberler").document(String.valueOf(id)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -104,6 +103,36 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
                 ref.update("read", read+1);
             }
         });
+    }
+
+    public void prepareContent() {
+        String[] contents = content.split("-*-");
+        for (String s : contents) {
+            if (s.startsWith("rsmwx")) {
+                String[] pic = s.split(":");
+
+                ImageView image = new ImageView(this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+
+                image.setFitsSystemWindows(true);
+                image.setScaleType(ImageView.ScaleType.FIT_XY);
+                image.setLayoutParams(lp);
+
+                Picasso.with(getApplicationContext()).load(pic[1]).resize(800, 600).into(image);
+                ll.addView(image);
+            } else {
+                TextView tw = new TextView(this);
+
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                tw.setTextSize(18);
+                tw.setLayoutParams(lp);
+                tw.setText(s);
+
+                ll.addView(tw);
+            }
+        }
     }
 
     @Override

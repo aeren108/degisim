@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,10 +22,9 @@ import java.util.ArrayList;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
-public class HomeFragment extends MainFragment implements AdapterView.OnItemClickListener {
+public class HomeFragment extends MainFragment {
 
     public ArrayList<News> queryItems;
 
@@ -44,12 +44,12 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ((MainActivity)getActivity()).categoryList.setOnItemClickListener(this);
-
         queryItems = new ArrayList<News>();
     }
 
     public void performSearchQuery(final String query) {
+        queryItems.clear();
+
         final Query q = fs.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
         q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -71,9 +71,6 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
 
                         queryItems.add(n);
                         adapter.setNews(queryItems);
-                        rv.setAdapter(adapter);
-                        rv.invalidate();
-                        adapter.notifyDataSetChanged();
                     }
                 }
             }
@@ -87,31 +84,13 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
         mode = 'q';
     }
 
-    //onClick func. for list items in catergorylist.
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String[] titles = ((MainActivity)getActivity()).categoryTitles;
-
-        catItems.clear();
-
-        for (int i = 0; i < LOAD_AMOUNT; i++)
-            u.fetchCategory(titles[position].toLowerCase(), i);
-
-        mode = 'c';
-        ((MainActivity) getActivity()).getSupportActionBar().setTitle(titles[position]);
-        currentCategory = titles[position];
-        adapter.setNews(catItems);
-
-        ((MainActivity)getActivity()).drawer.closeDrawers();
-    }
-
     @Override
     public void onRefresh() {
         if (mode == 'c') {
             catItems.clear();
             adapter.setNews(catItems);
             for (int i = 0; i < LOAD_AMOUNT; i++) {
-                u.fetchCategory(currentCategory, i);
+                u.fetchCategory(currentCategory, "id", i);
             }
         } else if (mode == 'd'){
             items.clear();
@@ -135,7 +114,7 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
     @Override
     public void loadFeature(int pos) {
         if (mode == 'c') {
-            u.fetchCategory(currentCategory, pos);
+            u.fetchCategory(currentCategory, "id", pos);
         } else if (mode == 'd'){
             u.fetchData("id", pos);
         }
@@ -149,5 +128,40 @@ public class HomeFragment extends MainFragment implements AdapterView.OnItemClic
     @Override
     public void onStartFeature() {
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        super.onNavigationItemSelected(item);
+
+        if (item.getItemId() == R.id.all) {
+            adapter.setNews(items);
+            mode = 'd';
+
+            ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
+
+            item.setChecked(true);
+            return  true;
+        } else {
+            for (int id : CATEGORIES) {
+                if (item.getItemId() == id) {
+                    String category = item.getTitle().toString().toLowerCase();
+
+                    catItems.clear();
+
+                    for (int i = 0; i < LOAD_AMOUNT; i++)
+                        u.fetchCategory(category, "id", i);
+
+                    mode = 'c';
+                    ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
+                    currentCategory = category;
+                    adapter.setNews(catItems);
+
+                    item.setChecked(true);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

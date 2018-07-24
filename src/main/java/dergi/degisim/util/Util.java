@@ -123,9 +123,10 @@ public class Util {
         });
     }
 
-    public void fetchCategory(final String category, final int pos) {
-        Query q = fs.collection("haberler").whereEqualTo("category", category).
-        orderBy("id", Query.Direction.DESCENDING);
+    public void fetchCategory(final String category, String orderID, final int pos) {
+        Query q = fs.collection("haberler").
+        orderBy(orderID, Query.Direction.DESCENDING).
+        whereEqualTo("category", category);
 
         q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
 
@@ -152,8 +153,9 @@ public class Util {
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                e.printStackTrace();
                 if (dataListener != null)
-                dataListener.onError(DataListener.CATFETCH_ERROR);
+                    dataListener.onError(DataListener.CATFETCH_ERROR);
             }
         });
     }

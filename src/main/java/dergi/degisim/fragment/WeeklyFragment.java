@@ -3,8 +3,10 @@ package dergi.degisim.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -13,7 +15,7 @@ import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.util.Util;
 
-public class WeeklyFragment extends MainFragment implements AdapterView.OnItemClickListener {
+public class WeeklyFragment extends MainFragment {
 
     public boolean catMode;
 
@@ -42,7 +44,7 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
             catItems.clear();
             adapter.setNews(catItems);
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++) {
-                u.fetchCategory(currentCategory, i);
+                u.fetchCategory(currentCategory, "read", i);
             }
         } else {
             items.clear();
@@ -54,19 +56,37 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String[] titles = ((MainActivity)getActivity()).categoryTitles;
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        super.onNavigationItemSelected(item);
 
-        catItems.clear();
-        catMode = true;
+        if (item.getItemId() == R.id.all) {
+            adapter.setNews(items);
+            catMode = false;
 
-        for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++)
-            u.fetchCategory(titles[position].toLowerCase(), i);
+            ((MainActivity)getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
+            item.setChecked(true);
+            return  true;
+        } else {
+            for (int id : CATEGORIES) {
+                if (item.getItemId() == id) {
+                    String category = item.getTitle().toString().toLowerCase();
 
-        currentCategory = titles[position];
-        adapter.setNews(catItems);
+                    catItems.clear();
 
-        ((MainActivity)getActivity()).drawer.closeDrawers();
+                    for (int i = 0; i < LOAD_AMOUNT; i++)
+                        u.fetchCategory(category, "read", i);
+
+                    catMode = true;
+                    ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
+                    currentCategory = category;
+                    adapter.setNews(catItems);
+
+                    item.setChecked(true);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -80,7 +100,7 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
     @Override
     public void loadFeature(int pos) {
         if (catMode) {
-            u.fetchCategory(currentCategory, pos);
+            u.fetchCategory(currentCategory, "read", pos);
         } else {
             u.fetchData("read", pos);
         }
@@ -88,7 +108,6 @@ public class WeeklyFragment extends MainFragment implements AdapterView.OnItemCl
 
     @Override
     public void onStartFeature() {
-        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(this);
         ((MainActivity) getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
     }
 }

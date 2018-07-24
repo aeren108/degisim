@@ -19,7 +19,7 @@
         android:id="@+id/email_input"
         style="@style/EditTextStle"
         android:layout_width="300dp"
-        android:layout_height="60dp"
+        android:layout_height="45dp"
         android:layout_above="@+id/password_input"
         android:layout_alignLeft="@+id/password_input"
         android:layout_alignStart="@+id/password_input"
@@ -27,7 +27,10 @@
         android:ems="10"
         android:hint="E-Posta"
         android:inputType="textEmailAddress"
-        android:textSize="14dp"
+        android:textSize="16dp"
+        android:padding="10dp"
+        android:textColor="#282828"
+        android:fontFamily="@font/track"
         android:selectAllOnFocus="false"
         android:singleLine="true"
         tools:layout_editor_absoluteX="84dp"
@@ -37,38 +40,49 @@
         style="@style/EditTextStle"
         android:id="@+id/password_input"
         android:layout_width="300dp"
-        android:layout_height="60dp"
+        android:layout_height="45dp"
         android:layout_above="@+id/login_button"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="22dp"
         android:ems="10"
         android:hint="Şifre"
+        android:padding="10dp"
         android:inputType="textPassword"
-        android:textSize="14dp"
+        android:textSize="16dp"
+        android:fontFamily="@font/track"
+        android:textColor="#282828"
         tools:layout_editor_absoluteX="84dp"
         tools:layout_editor_absoluteY="232dp" />
 
     <Button
         android:id="@+id/login_button"
-        android:layout_width="110dp"
-        android:layout_height="60dp"
-        android:layout_above="@+id/or"
-        android:layout_alignLeft="@+id/password_input"
-        android:layout_alignStart="@+id/password_input"
-        android:layout_marginBottom="23dp"
+        android:layout_width="98dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/email_input"
+        android:layout_marginBottom="160dp"
+        android:background="@android:color/transparent"
         android:backgroundTint="@color/colorAccent"
+        android:fontFamily="@font/nexa_bold"
         android:text="@string/s_login"
-        android:textAppearance="@style/TextAppearance.AppCompat.Button" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:layout_alignLeft="@+id/email_input" />
 
     <Button
         android:id="@+id/register_btn"
-        android:layout_width="110dp"
-        android:layout_height="60dp"
-        android:layout_alignEnd="@+id/password_input"
-        android:layout_alignRight="@+id/password_input"
-        android:layout_below="@+id/password_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/email_input"
+        android:layout_alignTop="@+id/login_button"
+        android:background="@android:color/transparent"
         android:backgroundTint="@color/login_color"
-        android:text="@string/s_register" />
+        android:fontFamily="@font/nexa_bold"
+        android:text="@string/s_register"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:layout_alignRight="@+id/email_input" />
 
     <TextView
         android:id="@+id/or"
@@ -91,17 +105,5 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="35dp"
         app:isDarkTheme="true" />
-
-    <ImageButton
-        android:id="@+id/go_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:background="@android:color/transparent"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        app:srcCompat="@drawable/back_32px" />
 
 </RelativeLayout>

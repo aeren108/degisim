@@ -16,16 +16,12 @@
         app:layout_anchor="@+id/app_bar"
         app:layout_anchorGravity="left|top">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
             <android.support.design.widget.CollapsingToolbarLayout
                 android:id="@+id/toolbar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
                 app:contentScrim="?attr/colorPrimary"
+                android:fitsSystemWindows="true"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:toolbarId="@+id/toolbar">
 
@@ -40,33 +36,33 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    app:layout_collapseMode="pin"
+                    app:layout_collapseMode="parallax"
                     app:popupTheme="@style/AppTheme.PopupOverlay" />
 
                 <ImageButton
                     android:id="@+id/go_back_newspaper"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:paddingLeft="4dp"
+                    android:paddingTop="5dp"
                     android:background="@android:color/transparent"
-                    app:srcCompat="@drawable/back_48px" />
+                    app:srcCompat="@drawable/back_32px" />
 
             </android.support.design.widget.CollapsingToolbarLayout>
-
-        </RelativeLayout>
     </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingSaveButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:clickable="true"
-        app:layout_anchor="@+id/include3"
-        app:layout_anchorGravity="right|top"
-        app:srcCompat="@drawable/filled_save_button"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="34dp"
-        android:focusable="true" />
+    android:id="@+id/floatingSaveButton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:clickable="true"
+    app:layout_anchor="@+id/include3"
+    app:layout_anchorGravity="right|top"
+    app:srcCompat="@drawable/bookmark"
+    android:layout_alignParentRight="true"
+    android:layout_marginRight="34dp"
+    android:focusable="true" />
 
     <include
         android:id="@+id/include3"

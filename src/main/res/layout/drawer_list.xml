@@ -11,6 +11,7 @@
         android:textColor="#484848"
         android:paddingBottom="12dp"
         android:paddingTop="12dp"
+        android:fontFamily="@font/track"
         android:paddingLeft="5dp" />
 
 </LinearLayout>

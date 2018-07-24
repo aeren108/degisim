@@ -1,6 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/categories"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/all"
+            android:icon="@drawable/dashboard"
+            android:title="HEPSİ"
+            android:checked="true" />
+
+        <item
+            android:id="@+id/science"
+            android:icon="@drawable/science"
+            android:title="BİLİM" />
+        <item
+            android:id="@+id/art"
+            android:icon="@drawable/art"
+            android:title="SANAT" />
+        <item
+            android:id="@+id/article"
+            android:icon="@drawable/article"
+            android:title="MAKALE" />
+    </group>
+
+    <group
+        android:id="@+id/app"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/login"
+            android:icon="@drawable/login"
+            android:title="GİRİŞ YAP" />
+        <item
+            android:id="@+id/about"
+            android:icon="@drawable/about"
+            android:title="HAKKIMIZDA" />
+    </group>
+
 </menu>

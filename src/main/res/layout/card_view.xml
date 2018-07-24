@@ -34,17 +34,15 @@
 
             <TextView
                 android:id="@+id/title"
-                android:layout_height="75dp"
+                android:layout_height="60dp"
                 android:layout_width="match_parent"
                 android:textColor="#FFFFFF"
                 android:layout_alignBottom="@+id/img"
                 android:paddingLeft="7dp"
                 app:autoSizeTextType="uniform"
-                app:autoSizeMinTextSize="22dp"
-                app:autoSizeMaxTextSize="28dp"
-                app:autoSizeStepGranularity="2sp"
+                android:autoSizePresetSizes="@array/autosize_text_sizes"
                 android:paddingBottom="7dp"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/bebas_neue"
                 android:gravity="bottom"
                 android:textAlignment="gravity"
                 android:layout_marginBottom="10dp" />
@@ -58,7 +56,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginTop="5dp"
                 android:layout_marginRight="5dp"
-                android:src="@drawable/filled_save_button"
+                android:src="@drawable/bookmark"
                 android:background="@null"/>
 
         </RelativeLayout>

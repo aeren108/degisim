@@ -28,7 +28,6 @@ import dergi.degisim.util.Util;
 
 public class MarkedFragment extends MainFragment {
 
-
     //A TextView which shows up when there is no bookmarked news
     private TextView empty;
 
@@ -85,6 +84,7 @@ public class MarkedFragment extends MainFragment {
     }
 
 
+
     @Override
     public void onRefresh() {
         if (Util.checkLoggedIn()) {
@@ -126,7 +126,6 @@ public class MarkedFragment extends MainFragment {
 
     @Override
     public void onStartFeature() {
-        ((MainActivity) getActivity()).categoryList.setOnItemClickListener(null);
         ((MainActivity) getActivity()).getSupportActionBar().setTitle("Kaydedilenler");
 
         if (Util.checkLoggedIn()) {

@@ -73,13 +73,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
                     }
                     try {
                         if (markeds.contains(String.valueOf(news.get(newsViewHolder.getAdapterPosition()).getID()))) {
-                            newsViewHolder.btn.setImageResource(R.drawable.eye_icon);
+                            newsViewHolder.btn.setImageResource(R.drawable.bookmarked);
                         } else {
-                            newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
+                            newsViewHolder.btn.setImageResource(R.drawable.bookmark);
                         }
                     } catch (IndexOutOfBoundsException e) {
                         Log.d("RV", "Index hatası");
-                        newsViewHolder.btn.setImageResource(R.drawable.filled_save_button);
+                        newsViewHolder.btn.setImageResource(R.drawable.bookmark);
                     }
                 }
 
@@ -145,11 +145,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                        if (saveButtonListener != null && !FirebaseAuth.getInstance().getCurrentUser().isAnonymous())
+                    if (FirebaseAuth.getInstance().getCurrentUser() != null &&
+                        !FirebaseAuth.getInstance().getCurrentUser().isAnonymous()) {
+                        if (saveButtonListener != null)
                             saveButtonListener.onClick(itemView, getAdapterPosition());
                         else
                             Log.d("Null", "OnClickListener is null");
+                    } else {
+                        Toast.makeText(context, "Kaydetmek için giriş yap", Toast.LENGTH_SHORT).show();
                     }
                 }
             });

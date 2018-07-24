@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -43,8 +42,6 @@ public class LoginActivity extends AppCompatActivity {
     private Button register;
     private GoogleSignInButton glogin;
 
-    private ImageButton back;
-
     private GoogleApiClient apiClient;
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
@@ -60,17 +57,6 @@ public class LoginActivity extends AppCompatActivity {
         login = findViewById(R.id.login_button);
         register = findViewById(R.id.register_btn);
         glogin = findViewById(R.id.signInButton);
-
-        back = findViewById(R.id.go_back);
-
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
 
         Slidr.attach(this);
 
@@ -96,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).
-        requestIdToken("255664996103-s53firas9ma7a1agd11b9j7299b55dac.apps.googleusercontent.com").requestEmail().build();
+        requestIdToken("1040413724850-0qvare5jk9qpv0vupqjmumkm5evclnrf.apps.googleusercontent.com").requestEmail().build();
 
         apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
             @Override
