@@ -52,14 +52,7 @@ public class Util {
 
     public static boolean checkLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null)
-            return false;
-        else {
-            if (user.isAnonymous())
-                return false;
-            else
-                return true;
-        }
+        return user != null && !user.isAnonymous();
     }
 
     public void fetchData(String orderBy, final int pos) {
@@ -73,15 +66,7 @@ public class Util {
                 }
 
                 DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
-
-                News n = new News();
-                n.setTitle(ds.getString("header"));
-                n.setContent(ds.getString("content"));
-                n.setUri(ds.getString("uri"));
-                n.setID(ds.getLong("id"));
-                n.setRead(ds.getLong("read"));
-
-                Log.d("DB", "Fetching " + pos + " ,info: \n" + n.toString());
+                News n = ds.toObject(News.class);
 
                 synchronized (this) {
                     if (dataListener != null)
@@ -106,15 +91,7 @@ public class Util {
                 if (!ds.exists())
                     return;
 
-                News n = new News();
-                n.setTitle(ds.getString("header"));
-                n.setContent(ds.getString("content"));
-                n.setUri(ds.getString("uri"));
-                n.setID(ds.getLong("id"));
-                n.setRead(ds.getLong("read"));
-
-
-                Log.d("DB", "Fetching " + pos + " ,info: \n" + n.toString());
+                News n = ds.toObject(News.class);
 
                 synchronized (this) {
                     if (dataListener != null)
@@ -144,15 +121,7 @@ public class Util {
                 }
 
                 DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
-
-                News n = new News();
-                n.setTitle(ds.getString("header"));
-                n.setContent(ds.getString("content"));
-                n.setUri(ds.getString("uri"));
-                n.setID(ds.getLong("id"));
-                n.setRead(ds.getLong("read"));
-
-                Log.d("DB", "Fetching " + category + " category: " + pos + " info: \n" + n.toString());
+                News n = ds.toObject(News.class);
 
                 synchronized (this) {
                     if (dataListener != null)

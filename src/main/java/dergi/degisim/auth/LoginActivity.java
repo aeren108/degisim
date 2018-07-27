@@ -3,10 +3,8 @@ package dergi.degisim.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -15,15 +13,10 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -70,22 +63,36 @@ public class LoginActivity extends AppCompatActivity {
         apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, connectionResult -> Toast.makeText(getApplicationContext(), "Bağlantı başarısız oldu", Toast.LENGTH_LONG).show()).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
     }
 
+    private boolean checkCreditentials(String email, String pswd) {
+        if (email.isEmpty() || pswd.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_SHORT).show();
+            return false;
+        } else if (!email.contains("@")) {
+            Toast.makeText(getApplicationContext(), "Geçerli bir e-posta girin", Toast.LENGTH_SHORT).show();
+            return false;
+        } else if (email.split("@")[1].split(".").length != 2){
+            Toast.makeText(getApplicationContext(), "Geçerli bir e-posta girin", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
     private void login() {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
+        if (!checkCreditentials(em, pd))
+            return;
+
         if (Util.checkLoggedIn())
             auth.signOut();
-
-        if (em.isEmpty() || pd.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
-            return;
-        }
 
         auth.signInWithEmailAndPassword(em, pd).addOnSuccessListener(authResult -> {
             Toast.makeText(getApplicationContext(), "Giriş yapıldı", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
+
+            finish();
         }).addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Parola veya e-posta doğru değil", Toast.LENGTH_LONG).show());
     }
 
@@ -93,21 +100,15 @@ public class LoginActivity extends AppCompatActivity {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
+        if (!checkCreditentials(em, pd))
+            return;
+
         if (Util.checkLoggedIn())
             auth.signOut();
-
-        if (em.isEmpty() || pd.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
-            return;
-        } else if (!em.contains("@")) {
-            Toast.makeText(getApplicationContext(), "Geçerli bir e-posta girin", Toast.LENGTH_LONG).show();
-            return;
-        }
 
         auth.createUserWithEmailAndPassword(em, pd).addOnSuccessListener(authResult -> {
             Toast.makeText(getApplicationContext(), "Başarılı", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
 
             FirebaseDatabase db = FirebaseDatabase.getInstance();
@@ -159,7 +160,6 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Başarılı @ auth", Toast.LENGTH_SHORT).show();
                 FirebaseUser user = auth.getCurrentUser();
 
-
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
@@ -167,9 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                 FirebaseDatabase db = FirebaseDatabase.getInstance();
                 DatabaseReference ref = db.getReference("users");
 
-                // Check if user is signing in first time
-                boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
-                if (isNew)
+                if (task.getResult().getAdditionalUserInfo().isNewUser())
                     ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
 
                 finish();

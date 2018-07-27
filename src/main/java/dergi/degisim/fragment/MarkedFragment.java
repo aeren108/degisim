@@ -40,7 +40,6 @@ public class MarkedFragment extends MainFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mode = MainFragment.DEFAULT;
         return inflater.inflate(R.layout.fragment_markeds, container, false);
     }
 
@@ -50,13 +49,14 @@ public class MarkedFragment extends MainFragment {
 
         empty = view.findViewById(R.id.empty);
         frame = view.findViewById(R.id.frame);
+
+        mode = MainFragment.DEFAULT;
     }
 
     public void loadMarkedNews(final int pos) {
         if (!MainFragment.LAST_MARKINGS.equals("empty") || !MainFragment.LAST_MARKINGS.isEmpty()) {
             if (frame != null && empty != null)
                 frame.removeView(empty);
-                Log.d("MMAA", pos+" " + lastFetch);
             if (pos < MainFragment.LAST_MARKINGS.size()) {
                 try {
                     u.fetchData(Integer.parseInt(MainFragment.LAST_MARKINGS.get(pos)));
@@ -104,7 +104,7 @@ public class MarkedFragment extends MainFragment {
 
     @Override
     public void returnDefault() {
-        // TODO: 12.05.2018 Handle returnDefault func. of marked fragment
+        onRefresh();
     }
 
     @Override

@@ -48,6 +48,8 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newspaper);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         Slidr.attach(this);
 
         u = new Util(this);
@@ -57,9 +59,6 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         back = findViewById(R.id.go_back_newspaper);
         fab = findViewById(R.id.floatingSaveButton);
         back.setOnClickListener(this);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         Bundle bundle = getIntent().getExtras();
         content = bundle.getString("content");

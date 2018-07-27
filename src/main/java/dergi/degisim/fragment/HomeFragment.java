@@ -34,14 +34,8 @@ public class HomeFragment extends MainFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
-
-    @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
         queryItems = new ArrayList<>();
+        return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     public void performSearchQuery(final String query) {
@@ -79,6 +73,41 @@ public class HomeFragment extends MainFragment {
         });
 
         mode = MainFragment.SEARCH;
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        super.onNavigationItemSelected(item);
+
+        if (item.getItemId() == R.id.all) {
+            adapter.setNews(items);
+            mode = MainFragment.DEFAULT;
+
+            ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim");
+
+            item.setChecked(true);
+            return  true;
+        } else {
+            for (int id : CATEGORIES) {
+                if (item.getItemId() == id) {
+                    String category = item.getTitle().toString().toLowerCase();
+                    Log.d("CATD", item.getTitle().toString());
+                    catItems.clear();
+
+                    for (int i = 0; i < LOAD_AMOUNT; i++)
+                        u.fetchCategory(category, "id", i);
+
+                    mode = MainFragment.CATEGORY;
+                    currentCategory = category;
+                    adapter.setNews(catItems);
+                    ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
+
+                    item.setChecked(true);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -125,40 +154,5 @@ public class HomeFragment extends MainFragment {
     @Override
     public void onStartFeature() {
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim");
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        super.onNavigationItemSelected(item);
-
-        if (item.getItemId() == R.id.all) {
-            adapter.setNews(items);
-            mode = MainFragment.DEFAULT;
-
-            ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim");
-
-            item.setChecked(true);
-            return  true;
-        } else {
-            for (int id : CATEGORIES) {
-                if (item.getItemId() == id) {
-                    String category = item.getTitle().toString().toLowerCase();
-                    Log.d("CATD", item.getTitle().toString());
-                    catItems.clear();
-
-                    for (int i = 0; i < LOAD_AMOUNT; i++)
-                        u.fetchCategory(category, "id", i);
-
-                    mode = MainFragment.CATEGORY;
-                    ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
-                    currentCategory = category;
-                    adapter.setNews(catItems);
-
-                    item.setChecked(true);
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

@@ -1,7 +1,6 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -10,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -18,30 +16,23 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Arrays;
-
-import dergi.degisim.adapter.ItemAdapter;
 import dergi.degisim.adapter.ViewPagerAdapter;
-import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.fragment.HomeFragment;
 import dergi.degisim.fragment.MainFragment;
 import dergi.degisim.fragment.MarkedFragment;
 import dergi.degisim.fragment.WeeklyFragment;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener,
-        MenuItem.OnActionExpandListener,
-        FirebaseAuth.AuthStateListener {
+                                                               MenuItem.OnActionExpandListener,
+                                                               FirebaseAuth.AuthStateListener,
+                                                               ViewPager.OnPageChangeListener,
+                                                               BottomNavigationView.OnNavigationItemSelectedListener{
 
+    public BottomNavigationView navigation;
     public DrawerLayout drawer;
     private NavigationView drawerNav;
 
@@ -51,100 +42,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private ViewPagerAdapter pagerAdapter;
     private MenuItem prevItem;
 
-    private FirebaseAuth auth = FirebaseAuth.getInstance();
-
-    public BottomNavigationView navigation;
+    private MainFragment curFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        drawer = findViewById(R.id.drawer_layout);
-        navigation = findViewById(R.id.navigation);
-        drawerNav = findViewById(R.id.drawer_nav);
-        pager = findViewById(R.id.pager);
-        pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-
-        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (prevItem != null)
-                    prevItem.setChecked(false);
-                else
-                    navigation.getMenu().getItem(0).setChecked(false);
-
-                Log.d("page",""+position);
-                navigation.getMenu().getItem(position).setChecked(true);
-                prevItem = navigation.getMenu().getItem(position);
-
-                MainFragment curFragment = (MainFragment) pagerAdapter.getItem(pager.getCurrentItem());
-                curFragment.onStartFeature();
-
-                drawerNav.setNavigationItemSelectedListener(curFragment);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-
-        pagerAdapter.addFragment(new HomeFragment());
-        pagerAdapter.addFragment(new MarkedFragment());
-        pagerAdapter.addFragment(new WeeklyFragment());
-        pager.setAdapter(pagerAdapter);
-
-        navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.navigation_home:
-                        pager.setCurrentItem(0);
-                        break;
-                    case R.id.navigation_dashboard:
-                        pager.setCurrentItem(1);
-                        break;
-                    case R.id.navigation_notifications:
-                        pager.setCurrentItem(2);
-                        break;
-                }
-                return false;
-            }
-        });
-
-//        auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-//            @Override
-//            public void onSuccess(AuthResult authResult) {
-//                Log.d("AUTH", "Logged in anonymously");
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                Log.d("AUTH", "Couldn't logged in anonymously");
-//            }
-//        });
-
-        MainFragment fr = (MainFragment) pagerAdapter.getItem(pager.getCurrentItem());
-        drawerNav.setNavigationItemSelectedListener(fr);
-
         Toolbar bar = findViewById(R.id.toolbar);
         setSupportActionBar(bar);
 
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        drawer = findViewById(R.id.drawer_layout);
+        navigation = findViewById(R.id.navigation);
+        drawerNav = findViewById(R.id.drawer_nav);
+        pager = findViewById(R.id.pager);
+        pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        curFragment = (MainFragment) pagerAdapter.getItem(pager.getCurrentItem());
         toggle = new ActionBarDrawerToggle(this, drawer, R.string.opened, R.string.closed);
 
-        drawer.setDrawerListener(toggle);
+        drawerNav.setNavigationItemSelectedListener(curFragment);
+        navigation.setOnNavigationItemSelectedListener(this);
+        drawer.addDrawerListener(toggle);
+
+        pagerAdapter.addFragment(new HomeFragment());
+        pagerAdapter.addFragment(new MarkedFragment());
+        pagerAdapter.addFragment(new WeeklyFragment());
+        pager.addOnPageChangeListener(this);
+        pager.setAdapter(pagerAdapter);
+
         toggle.syncState();
 
-        auth.addAuthStateListener(this);
+        FirebaseAuth.getInstance().addAuthStateListener(this);
     }
 
     @Override
@@ -156,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
+
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
         searchItem.setOnActionExpandListener(this);
@@ -167,20 +98,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onQueryTextSubmit(String query) {
         pager.setCurrentItem(0);
 
-        Fragment curFragment = pagerAdapter.getItem(0);
+        curFragment = (MainFragment) pagerAdapter.getItem(0);
         ((HomeFragment) curFragment).performSearchQuery(query);
         return true;
     }
 
     @Override
-    public boolean onQueryTextChange(String newText) {
-        return false;
-    }
+    public boolean onQueryTextChange(String newText) { return false; }
 
     @Override
-    public boolean onMenuItemActionExpand(MenuItem item) {
-        return true;
-    }
+    public boolean onMenuItemActionExpand(MenuItem item) { return true; }
 
     @Override
     public boolean onMenuItemActionCollapse(MenuItem item) {
@@ -188,8 +115,24 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (curFragment instanceof HomeFragment) {
             ((HomeFragment) curFragment).returnDefault();
         }
-
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        curFragment = (MainFragment) pagerAdapter.getItem(pager.getCurrentItem());
+
+        if (curFragment instanceof HomeFragment) {
+            if (((HomeFragment) curFragment).mode == MainFragment.CATEGORY ||
+                ((HomeFragment) curFragment).mode == MainFragment.SEARCH) {
+                ((HomeFragment) curFragment).returnDefault();
+            }
+        } else if (curFragment instanceof WeeklyFragment) {
+            if (((WeeklyFragment) curFragment).mode == MainFragment.CATEGORY) {
+                ((WeeklyFragment) curFragment).returnDefault();
+            }
+        } else
+            super.onBackPressed();
     }
 
     @Override
@@ -207,34 +150,47 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             drawerNav.getMenu().getItem(4).setTitle("GİRİŞ YAP");
             drawerNav.invalidate();
 
-            auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                @Override
-                public void onSuccess(AuthResult authResult) {
-                    Log.d("AUTH", "Logged in anonymously");
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d("AUTH", "Couldn't logged in anonymously");
-                }
-            });
+            FirebaseAuth.getInstance().signInAnonymously().
+                    addOnSuccessListener(authResult -> Log.d("AUTH", "Logged in anonymously")).
+                    addOnFailureListener(e -> Log.d("AUTH", "Couldn't logged in anonymously"));
         }
     }
 
     @Override
-    public void onBackPressed() {
-        Fragment curFragment = pagerAdapter.getItem(pager.getCurrentItem());
-
-        if (curFragment instanceof HomeFragment) {
-            if (((HomeFragment) curFragment).mode == MainFragment.CATEGORY ||
-                ((HomeFragment) curFragment).mode == MainFragment.SEARCH) {
-                ((HomeFragment) curFragment).returnDefault();
-            }
-        } else if (curFragment instanceof WeeklyFragment) {
-            if (((WeeklyFragment) curFragment).mode == MainFragment.CATEGORY) {
-                ((WeeklyFragment) curFragment).returnDefault();
-            }
-        } else
-            super.onBackPressed();
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.navigation_home:
+                pager.setCurrentItem(0);
+                break;
+            case R.id.navigation_dashboard:
+                pager.setCurrentItem(1);
+                break;
+            case R.id.navigation_notifications:
+                pager.setCurrentItem(2);
+                break;
+        }
+        return false;
     }
+
+    @Override
+    public void onPageSelected(int position) {
+        if (prevItem != null)
+            prevItem.setChecked(false);
+        else
+            navigation.getMenu().getItem(0).setChecked(false);
+
+        MenuItem item = navigation.getMenu().getItem(position);
+        item.setChecked(true);
+        prevItem = item;
+
+        curFragment = (MainFragment) pagerAdapter.getItem(pager.getCurrentItem());
+        curFragment.onStartFeature();
+
+        drawerNav.setNavigationItemSelectedListener(curFragment);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {}
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
 }
