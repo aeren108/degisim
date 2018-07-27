@@ -10,8 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +32,7 @@ public class MarkedFragment extends MainFragment {
 
     //A TextView which shows up when there is no bookmarked news
     private TextView empty;
+    private FrameLayout frame;
 
     public MarkedFragment() {
         u = new Util(this);
@@ -37,6 +40,7 @@ public class MarkedFragment extends MainFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mode = MainFragment.DEFAULT;
         return inflater.inflate(R.layout.fragment_markeds, container, false);
     }
 
@@ -45,52 +49,36 @@ public class MarkedFragment extends MainFragment {
         super.onViewCreated(view, savedInstanceState);
 
         empty = view.findViewById(R.id.empty);
+        frame = view.findViewById(R.id.frame);
     }
 
     public void loadMarkedNews(final int pos) {
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference ref = db.getReference("users").child(String.valueOf(ID)).child("markeds");
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String allMarkeds = (String) dataSnapshot.getValue();
-                if (!allMarkeds.equals("empty") || !allMarkeds.isEmpty()) {
-                    empty.setVisibility(TextView.INVISIBLE);
-                    markeds = Arrays.asList(allMarkeds.split(","));
-                    Log.d("MARK", markeds.toString());
-                    if (pos < markeds.size()) {
-                        try {
-                            u.fetchData(Integer.parseInt(markeds.get(pos)));
-                            lastFetch = pos;
-                        } catch (NumberFormatException e) {
-                            srl.setRefreshing(false);
-                            empty.setVisibility(TextView.VISIBLE);
-                        }
-                    } else {
-                        srl.setRefreshing(false);
-                        empty.setVisibility(TextView.VISIBLE);
-                    }
-                } else {
+        if (!MainFragment.LAST_MARKINGS.equals("empty") || !MainFragment.LAST_MARKINGS.isEmpty()) {
+            if (frame != null && empty != null)
+                frame.removeView(empty);
+                Log.d("MMAA", pos+" " + lastFetch);
+            if (pos < MainFragment.LAST_MARKINGS.size()) {
+                try {
+                    u.fetchData(Integer.parseInt(MainFragment.LAST_MARKINGS.get(pos)));
+                    lastFetch = pos;
+                } catch (NumberFormatException e) {
                     srl.setRefreshing(false);
-                    empty.setVisibility(TextView.VISIBLE);
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+            } else {
                 srl.setRefreshing(false);
             }
-        });
+        } else {
+            srl.setRefreshing(false);
+        }
     }
-
-
 
     @Override
     public void onRefresh() {
+        items.clear();
         if (Util.checkLoggedIn()) {
-            items.clear();
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++)
                 loadMarkedNews(i);
+            frame.removeView(empty);
         } else {
             AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
             alert.setTitle("Kullanıcı Girişi Yok");
@@ -98,12 +86,14 @@ public class MarkedFragment extends MainFragment {
             alert.setPositiveButton("Tamam", null).setNegativeButton("Giriş Yap", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    FirebaseAuth.getInstance().removeAuthStateListener(((MainActivity)getActivity()));
                     Intent intent = new Intent(getActivity(), LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     startActivity(intent);
                     getActivity().finish();
                 }
             }).show();
+            srl.setRefreshing(false);
         }
     }
 
@@ -145,5 +135,19 @@ public class MarkedFragment extends MainFragment {
                 }
             }).show();
         }
+    }
+
+    @Override
+    public void onDataFetched(News n, int pos) {
+        for (News news : items) {
+            if (news.getID() == n.getID())
+                return;
+        }
+
+        items.add(n);
+        adapter.setNews(items);
+
+        Log.d("fetch", "Position: " + pos + "th fetch: " + lastFetch);
+        srl.setRefreshing(false);
     }
 }

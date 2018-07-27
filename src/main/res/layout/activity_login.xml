@@ -30,7 +30,7 @@
         android:textSize="16dp"
         android:padding="10dp"
         android:textColor="#282828"
-        android:fontFamily="@font/track"
+        android:fontFamily="@font/league_spartan"
         android:selectAllOnFocus="false"
         android:singleLine="true"
         tools:layout_editor_absoluteX="84dp"
@@ -49,7 +49,7 @@
         android:padding="10dp"
         android:inputType="textPassword"
         android:textSize="16dp"
-        android:fontFamily="@font/track"
+        android:fontFamily="@font/league_spartan"
         android:textColor="#282828"
         tools:layout_editor_absoluteX="84dp"
         tools:layout_editor_absoluteY="232dp" />

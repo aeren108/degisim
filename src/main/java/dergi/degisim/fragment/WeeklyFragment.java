@@ -17,8 +17,6 @@ import dergi.degisim.util.Util;
 
 public class WeeklyFragment extends MainFragment {
 
-    public boolean catMode;
-
     public WeeklyFragment() {
         u = new Util(this);
     }
@@ -28,7 +26,6 @@ public class WeeklyFragment extends MainFragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    @SuppressLint("ResourceAsColor")
     @Override
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -40,13 +37,13 @@ public class WeeklyFragment extends MainFragment {
 
     @Override
     public void onRefresh() {
-        if (catMode) {
+        if (mode == MainFragment.CATEGORY) {
             catItems.clear();
             adapter.setNews(catItems);
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++) {
                 u.fetchCategory(currentCategory, "read", i);
             }
-        } else {
+        } else if (mode == MainFragment.DEFAULT) {
             items.clear();
             adapter.setNews(items);
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++) {
@@ -61,7 +58,7 @@ public class WeeklyFragment extends MainFragment {
 
         if (item.getItemId() == R.id.all) {
             adapter.setNews(items);
-            catMode = false;
+            mode = MainFragment.DEFAULT;
 
             ((MainActivity)getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
             item.setChecked(true);
@@ -76,7 +73,7 @@ public class WeeklyFragment extends MainFragment {
                     for (int i = 0; i < LOAD_AMOUNT; i++)
                         u.fetchCategory(category, "read", i);
 
-                    catMode = true;
+                    mode = MainFragment.CATEGORY;
                     ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
                     currentCategory = category;
                     adapter.setNews(catItems);
@@ -92,16 +89,16 @@ public class WeeklyFragment extends MainFragment {
     @Override
     public void returnDefault() {
         adapter.setNews(items);
-        catMode = false;
+        mode = MainFragment.DEFAULT;
 
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Haftanın Enleri");
     }
 
     @Override
     public void loadFeature(int pos) {
-        if (catMode) {
+        if (mode == MainFragment.CATEGORY) {
             u.fetchCategory(currentCategory, "read", pos);
-        } else {
+        } else if (mode == MainFragment.DEFAULT) {
             u.fetchData("read", pos);
         }
     }

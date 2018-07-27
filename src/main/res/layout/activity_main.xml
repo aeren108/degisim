@@ -1,4 +1,5 @@
-<android.support.v4.widget.DrawerLayout android:id="@+id/drawer_layout"
+<android.support.v4.widget.DrawerLayout
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -31,7 +32,7 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:layout_width="270dp"
+        android:layout_width="280dp"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         android:orientation="vertical"
@@ -41,13 +42,13 @@
         <RelativeLayout
             android:id="@+id/drawer_linear"
             android:layout_width="match_parent"
-            android:layout_height="155dp"
+            android:layout_height="180dp"
             android:orientation="vertical"
             android:background="@drawable/gradient">
 
             <ImageView
-                android:layout_width="90dp"
-                android:layout_height="90dp"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
                 android:src="@drawable/d_icon"
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true"
@@ -56,14 +57,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:textSize="23sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true"
                 android:paddingTop="110dp"
                 android:paddingEnd="10dp"
-                android:fontFamily="@font/lemon_milk_bold"
+                android:fontFamily="@font/trajan_pro_bold"
                 android:text="DEĞİŞİM"
                 android:paddingRight="16dp" />
         </RelativeLayout>

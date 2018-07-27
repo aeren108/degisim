@@ -6,21 +6,21 @@
         <item
             android:id="@+id/all"
             android:icon="@drawable/dashboard"
-            android:title="HEPSİ"
+            android:title="Hepsi"
             android:checked="true" />
 
         <item
             android:id="@+id/science"
             android:icon="@drawable/science"
-            android:title="BİLİM" />
+            android:title="Bilim" />
         <item
             android:id="@+id/art"
             android:icon="@drawable/art"
-            android:title="SANAT" />
+            android:title="Sanat" />
         <item
             android:id="@+id/article"
             android:icon="@drawable/article"
-            android:title="MAKALE" />
+            android:title="Teknoloji" />
     </group>
 
     <group

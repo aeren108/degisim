@@ -17,12 +17,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
@@ -39,11 +49,13 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
                                                                NavigationView.OnNavigationItemSelectedListener {
 
     protected FirebaseFirestore fs = FirebaseFirestore.getInstance();
+    protected FirebaseDatabase db = FirebaseDatabase.getInstance();
     protected FirebaseAuth auth = FirebaseAuth.getInstance();
 
     protected List<News> items;
     protected List<News> catItems;
     protected List<String> markeds;
+    protected List<AdView> ads;
 
     protected DrawerLayout drawer;
     protected RecyclerView rv;
@@ -57,14 +69,19 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     protected int lastCatFetch;
     public boolean isScrolling = false;
 
-    protected static String LAST_MARKINGS = "";
     protected String currentCategory = "";
     protected static String ID;
+    public int mode = DEFAULT;
 
-    public static final int LOAD_AMOUNT = 2; //Temporary value
-    public static final int NEWS_AMOUNT = 3; //Temporary value
+    public static final int DEFAULT = 0;
+    public static final int CATEGORY = 1;
+    public static final int SEARCH = 2;
 
+    public static final int LOAD_AMOUNT = 2;
+    public static final int NEWS_AMOUNT = 3;
+    public static final int ITEMS_PER_AD = 3;
     public static final int[] CATEGORIES = {R.id.science, R.id.art, R.id.article};
+    public static List<String> LAST_MARKINGS;
 
     public MainFragment() {
         u = new Util(this);
@@ -74,36 +91,26 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (Util.checkLoggedIn()) {
-            MainFragment.ID = auth.getCurrentUser().getUid();
-        }
-
         items = new ArrayList<>();
         catItems = new ArrayList<>();
 
         srl = view.findViewById(R.id.swiper);
         srl.setOnRefreshListener(this);
 
+        LAST_MARKINGS = new ArrayList<>();
+
         drawer = view.findViewById(R.id.drawer_layout);
+
+        MobileAds.initialize(getContext(), "ca-app-pub-7818316138487741~8091624502");
 
         m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
-        adapter = new RecyclerAdapter(getActivity(), new ItemClickListener() {
-            @Override
-            public void onClick(View v, int pos) { //LIST ITEMS CLICK LISTENER
-                Log.d("NEWS", "Clicked on: " + pos + ". item");
-                Util.openNewspaper(getActivity(), adapter.getNews(), pos);
-            }
-        }, new ItemClickListener() {
-            @Override
-            public void onClick(View v, int pos) { //SAVE BUTTON LISTENER
-                final News n = adapter.getNews().get(pos);
-
-                // Just calling saveNews() func. because it checks if news is bookmarkde or not,
-                // if news is already bookmarked it calls unsave()
-                u.saveNews(n);
-            }
-
+        adapter = new RecyclerAdapter(getActivity(), (v, pos) -> { //LIST ITEMS CLICK LISTENER
+            Util.openNewspaper(getActivity(), adapter.getNews(), pos);
+        }, (v, pos) -> { //SAVE BUTTON LISTENER
+            // Just calling saveNews() func. because it checks if news is bookmarkde or not,
+            // if news is already bookmarked it calls unsave()
+            u.saveNews(adapter.getNews().get(adapter.getRealPosition(pos)));
         });
 
         //SCROLL LISTENER
@@ -126,7 +133,10 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
                 if (isScrolling && (visibleItems + outItems) == totalItems) {
 
                     for (int i = 0; i < NEWS_AMOUNT; i++) {
-                        loadFeature(lastFetch + 1 + i);
+                        if (mode == MainFragment.DEFAULT)
+                            loadFeature(lastFetch + 1 + i);
+                        else if (mode == MainFragment.CATEGORY)
+                            loadFeature(lastCatFetch + 1 + i);
                     }
 
                     isScrolling = false;
@@ -134,21 +144,44 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
             }
         });
 
-        adapter.setNews(items);
-        rv.setAdapter(adapter);
-        rv.setLayoutManager(m);
+        //if logged in check bookmarked news
+        if (Util.checkLoggedIn()) {
+            MainFragment.ID = auth.getCurrentUser().getUid();
+
+            final FirebaseUser usr = auth.getCurrentUser();
+            final DatabaseReference ref = db.getReference("users");
+
+            Log.d("TTTTA", usr.getUid());
+
+            ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    MainFragment.LAST_MARKINGS = Arrays.asList(dataSnapshot.getValue().toString().split(","));
+                    adapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
 
         for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
             loadFeature(i);
         }
+
+        adapter.setNews(items);
+        rv.setAdapter(adapter);
+        rv.setLayoutManager(m);
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
         if (item.getItemId() == R.id.login) {
-            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            if (!Util.checkLoggedIn()) {
                 Intent intent = new Intent(getContext(), LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
             } else {
                 FirebaseAuth.getInstance().signOut();
@@ -177,11 +210,11 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         }
 
         items.add(n);
-        adapter.notifyDataSetChanged();
+        adapter.setNews(items);
 
         lastFetch = pos;
 
-        Log.d("fetch", "Position: " + pos + "ast fetch: " + lastFetch);
+        Log.d("fetch", "Position: " + pos + "th fetch: " + lastFetch);
         srl.setRefreshing(false);
     }
 
@@ -204,9 +237,9 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
 
     @Override
     public void onDataSaved(String lastMarkings, final News n) {
-        MainFragment.LAST_MARKINGS = lastMarkings;
+        MainFragment.LAST_MARKINGS = Arrays.asList(lastMarkings.split(","));
 
-        Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi.", Snackbar.LENGTH_SHORT);
+        Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi", Snackbar.LENGTH_SHORT);
         snackbar.setAction("GERİ AL", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -218,9 +251,9 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
 
     @Override
     public void onDataUnsaved(String lastMarkings, final News n) {
-        MainFragment.LAST_MARKINGS = lastMarkings;
+        MainFragment.LAST_MARKINGS = Arrays.asList(lastMarkings.split(","));
 
-        Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi.", Snackbar.LENGTH_SHORT);
+        Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedilenlerden çıkarıldı", Snackbar.LENGTH_SHORT);
         snackbar.setAction("GERİ AL", new View.OnClickListener() {
             @Override
             public void onClick(View v) {

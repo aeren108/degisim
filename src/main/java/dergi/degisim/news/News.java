@@ -6,6 +6,8 @@ public class News {
     private String uri;
     private String title;
     private String content;
+    private String author;
+    //private Date/String date;
     private long id;
     private long read;
     private boolean isSaved;
@@ -14,7 +16,8 @@ public class News {
 
     }
 
-    public News(String uri, String title, String content) {
+    public News(long id, String uri, String title, String content) {
+        this.id = id;
         this.uri = uri;
         this.title = title;
         this.content = content;
@@ -66,6 +69,13 @@ public class News {
         isSaved = saved;
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
     @Override
     public String toString() {

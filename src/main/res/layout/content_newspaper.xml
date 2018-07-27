@@ -14,9 +14,36 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_margin="15dp">
+        android:layout_margin="10dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="15dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/bebas_neue"
+            android:textColor="#121212"
+            android:textSize="28sp"
+            android:paddingTop="8dp"
+            android:paddingBottom="25dp"/>
+
+        <TextView
+            android:id="@+id/info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:text="Ahmet Eren ÇOLAK / 21.05.19"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginBottom="35dp"/>
 
     </LinearLayout>
-
 
 </android.support.v4.widget.NestedScrollView>

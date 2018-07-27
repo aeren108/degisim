@@ -26,7 +26,7 @@
             <ImageView
                 android:id="@+id/img"
                 android:layout_width="match_parent"
-                android:layout_height="275dp"
+                android:layout_height="270dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
@@ -37,6 +37,7 @@
                 android:layout_height="60dp"
                 android:layout_width="match_parent"
                 android:textColor="#FFFFFF"
+                android:background="#803d3d3d"
                 android:layout_alignBottom="@+id/img"
                 android:paddingLeft="7dp"
                 app:autoSizeTextType="uniform"
@@ -44,8 +45,7 @@
                 android:paddingBottom="7dp"
                 android:fontFamily="@font/bebas_neue"
                 android:gravity="bottom"
-                android:textAlignment="gravity"
-                android:layout_marginBottom="10dp" />
+                android:textAlignment="gravity" />
 
             <ImageButton
                 android:id="@+id/save_button"
@@ -57,7 +57,7 @@
                 android:layout_marginTop="5dp"
                 android:layout_marginRight="5dp"
                 android:src="@drawable/bookmark"
-                android:background="@null"/>
+                android:background="#803d3d3d"/>
 
         </RelativeLayout>
 

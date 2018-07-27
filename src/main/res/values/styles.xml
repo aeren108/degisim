@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -37,6 +37,12 @@
         <item name="android:textColor">#333333</item>
         <item name="android:textSize">15sp</item>
         <item name="android:fontFamily">@font/nexa_bold</item>
+    </style>
+
+    <style name="ToolbarText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">26sp</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:fontFamily">@font/bebas_neue</item>
     </style>
 
 </resources>

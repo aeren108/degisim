@@ -2,6 +2,7 @@
 package dergi.degisim.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -24,107 +28,150 @@ import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.R;
+import dergi.degisim.fragment.MainFragment;
 import dergi.degisim.util.Util;
 import dergi.degisim.news.News;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsViewHolder> {
+public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<News> news;
+    private List<Object> items;
+
     private ItemClickListener clickListener;
     private ItemClickListener saveButtonListener;
 
     private final Context context;
 
+    private static final int BANNER = 0;
+    private static final int NEWS = 1;
+
     public RecyclerAdapter(Context context, ItemClickListener clickListener, ItemClickListener saveButtonListener) {
         this.context = context;
         this.clickListener = clickListener;
         this.saveButtonListener = saveButtonListener;
+
+        items = new ArrayList<>();
     }
 
     @Override
-    public NewsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view, parent, false);
-        return new NewsViewHolder(v);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == NEWS) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.news_container, parent, false);
+            return new NewsViewHolder(v);
+        } else {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.banner_container, parent, false);
+            return new AdViewHolder(v);
+        }
     }
 
     @Override
-    public void onBindViewHolder(final NewsViewHolder newsViewHolder, int position) {
-        newsViewHolder.title.setText(news.get(newsViewHolder.getAdapterPosition()).getTitle());
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+        if (getItemViewType(position) == NEWS) {
+            NewsViewHolder newsViewHolder = (NewsViewHolder) holder;
 
-        if (Util.checkLoggedIn()) {
-            final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
-            final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+            News n = (News) items.get(position);
+            newsViewHolder.title.setText(n.getTitle());
 
-            ref.child(usr.getUid()).child("markeds").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    String marks;
-                    List<String> markeds;
+            if (Util.checkLoggedIn()) {
+                final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
+                final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
 
-                    if (dataSnapshot.getValue().equals("empty")) {
-                        markeds = new ArrayList<>();
-                    } else {
-                        marks = (String) dataSnapshot.getValue();
-                        markeds = Arrays.asList(marks.split(","));
-                    }
-                    try {
-                        if (markeds.contains(String.valueOf(news.get(newsViewHolder.getAdapterPosition()).getID()))) {
-                            newsViewHolder.btn.setImageResource(R.drawable.bookmarked);
-                        } else {
+                ref.child(usr.getUid()).child("markeds").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        try {
+                            if (MainFragment.LAST_MARKINGS.contains(String.valueOf(n.getID()))) {
+                                newsViewHolder.btn.setImageResource(R.drawable.bookmarked);
+                            } else {
+                                newsViewHolder.btn.setImageResource(R.drawable.bookmark);
+                            }
+                        } catch (IndexOutOfBoundsException e) {
+                            Log.d("RV", "Index hatası");
                             newsViewHolder.btn.setImageResource(R.drawable.bookmark);
                         }
-                    } catch (IndexOutOfBoundsException e) {
-                        Log.d("RV", "Index hatası");
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
                         newsViewHolder.btn.setImageResource(R.drawable.bookmark);
                     }
+                });
+            }
+
+            //Try loading images from cache
+            Picasso.with(context).load(n.getUri()).
+            resize(980, 660).
+            networkPolicy(NetworkPolicy.OFFLINE).
+            into(newsViewHolder.img, new Callback() {
+                @Override
+                public void onSuccess() {
+                    //Image is loaded from cache
                 }
 
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Toast.makeText(context, "Haberi kaydedemedik :(", Toast.LENGTH_LONG).show();
+                public void onError() {
+                    //Image is not in the cache, load from the internet
+                    Picasso.with(context).load(n.getUri()).
+                    resize(980, 660).
+                    networkPolicy(NetworkPolicy.NO_CACHE).
+                    into(newsViewHolder.img);
                 }
             });
         } else {
-            // TODO: 2.05.2018 Handle no user login 
+            AdViewHolder adViewHolder = (AdViewHolder) holder;
+            AdView adView = (AdView) items.get(position);
+
+            if (adViewHolder.cardView.getChildCount() > 0) {
+                adViewHolder.cardView.removeAllViews();
+            }
+            if (adView.getParent() != null) {
+                ((ViewGroup) adView.getParent()).removeView(adView);
+            }
+
+            adViewHolder.cardView.addView(adView);
         }
+    }
 
-        //Try loading images from cache
-        Picasso.with(context).load(news.get(position).getUri()).
-        resize(980, 660).
-        networkPolicy(NetworkPolicy.OFFLINE).
-        into(newsViewHolder.img, new Callback() {
-            @Override
-            public void onSuccess() {
-                //Image is loaded from cache
-            }
-
-            @Override
-            public void onError() {
-                //Image is not in the cache, load from the internet
-
-                Picasso.with(context).load(news.get(newsViewHolder.getAdapterPosition()).getUri()).
-                resize(980, 660).
-                networkPolicy(NetworkPolicy.NO_CACHE).
-                into(newsViewHolder.img);
-            }
-        });
+    public int getRealPosition(int pos) {
+        return pos - (pos / MainFragment.ITEMS_PER_AD);
     }
 
     @Override
     public int getItemCount() {
-        return news.size();
+        return items.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if ((position % MainFragment.ITEMS_PER_AD) == 0 && position != 0)
+            return BANNER;
+        return NEWS;
     }
 
     public void setNews(List<News> news) {
         this.news = news;
+        items.clear();
+        items.addAll(news);
+
+        for (int i = MainFragment.ITEMS_PER_AD; i <= items.size(); i+=MainFragment.ITEMS_PER_AD) {
+            AdView adView = new AdView(context);
+            adView.setAdSize(AdSize.SMART_BANNER);
+            adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+            adView.loadAd(new AdRequest.Builder().build());
+            items.add(i, adView);
+        }
+
+        Log.d("TGAA", items.toString());
+
         notifyDataSetChanged();
     }
 
-    public List<News> getNews() {return news;}
+    public List<News> getNews() {
+        return news;
+    }
 
     public void addItem(News n) {
         news.add(n);
@@ -164,9 +211,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.NewsVi
         public void onClick(View v) {
             Log.d("CLICK EVENT", "Clicked on:" + getAdapterPosition());
             if (clickListener != null)
-                clickListener.onClick(itemView, getAdapterPosition());
+                clickListener.onClick(itemView, getRealPosition(getAdapterPosition()));
             else
                 Log.d("Null", "OnClickListener is null");
+        }
+    }
+
+    class AdViewHolder extends RecyclerView.ViewHolder {
+        CardView cardView;
+
+        public AdViewHolder(View itemView) {
+            super(itemView);
+
+            cardView = itemView.findViewById(R.id.ad_card_view);
         }
     }
 }

@@ -34,6 +34,7 @@ import com.shobhitpuri.custombuttons.GoogleSignInButton;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
+import dergi.degisim.util.Util;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText email;
@@ -51,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        Slidr.attach(this);
 
         email = findViewById(R.id.email_input);
         pswd = findViewById(R.id.password_input);
@@ -58,45 +60,21 @@ public class LoginActivity extends AppCompatActivity {
         register = findViewById(R.id.register_btn);
         glogin = findViewById(R.id.signInButton);
 
-        Slidr.attach(this);
-
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                login();
-            }
-        });
-
-        register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                register();
-            }
-        });
-
-        glogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signIn();
-            }
-        });
+        login.setOnClickListener(v -> login());
+        register.setOnClickListener(v -> register());
+        glogin.setOnClickListener(v -> signIn());
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).
         requestIdToken("1040413724850-0qvare5jk9qpv0vupqjmumkm5evclnrf.apps.googleusercontent.com").requestEmail().build();
 
-        apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-            @Override
-            public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                Toast.makeText(getApplicationContext(), "Bağlantı başarısız oldu", Toast.LENGTH_LONG).show();
-            }
-        }).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
+        apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, connectionResult -> Toast.makeText(getApplicationContext(), "Bağlantı başarısız oldu", Toast.LENGTH_LONG).show()).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
     }
 
     private void login() {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
-        if (auth.getCurrentUser() != null)
+        if (Util.checkLoggedIn())
             auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
@@ -104,31 +82,19 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        auth.signInWithEmailAndPassword(em, pd).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-                Toast.makeText(getApplicationContext(), "Giriş yapıldı", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-
-                finish();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Parola veya e-posta doğru değil", Toast.LENGTH_LONG).show();
-            }
-        });
+        auth.signInWithEmailAndPassword(em, pd).addOnSuccessListener(authResult -> {
+            Toast.makeText(getApplicationContext(), "Giriş yapıldı", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }).addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Parola veya e-posta doğru değil", Toast.LENGTH_LONG).show());
     }
 
     private void register() {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
-        if (auth.getCurrentUser() != null)
-            if (auth.getCurrentUser().isAnonymous())
-                auth.signOut();
+        if (Util.checkLoggedIn())
+            auth.signOut();
 
         if (em.isEmpty() || pd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_LONG).show();
@@ -138,26 +104,18 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        auth.createUserWithEmailAndPassword(em, pd).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-                Toast.makeText(getApplicationContext(), "Başarılı", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
+        auth.createUserWithEmailAndPassword(em, pd).addOnSuccessListener(authResult -> {
+            Toast.makeText(getApplicationContext(), "Başarılı", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(intent);
 
-                FirebaseDatabase db = FirebaseDatabase.getInstance();
-                DatabaseReference ref = db.getReference("users");
-                ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
+            FirebaseDatabase db = FirebaseDatabase.getInstance();
+            DatabaseReference ref = db.getReference("users");
+            ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
 
-                finish();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Bir şeyler yanlış oldu, tüh :(", Toast.LENGTH_LONG).show();
-            }
-        });
+            finish();
+        }).addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Bir şeyler yanlış oldu, tüh :(", Toast.LENGTH_LONG).show());
     }
 
     private void signIn() {
@@ -195,34 +153,28 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("AUTH", "authenticating..");
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        auth.signInWithCredential(credential)
-        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Log.d("AUTH", "signInWithCredential:success");
-                    Toast.makeText(getApplicationContext(), "Başarılı @ auth", Toast.LENGTH_SHORT).show();
-                    FirebaseUser user = auth.getCurrentUser();
-                    Log.d("AUTH", "USER INFO: " + user.getDisplayName() + " " + user.getEmail());
+        auth.signInWithCredential(credential).
+        addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(getApplicationContext(), "Başarılı @ auth", Toast.LENGTH_SHORT).show();
+                FirebaseUser user = auth.getCurrentUser();
 
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
 
-                    FirebaseDatabase db = FirebaseDatabase.getInstance();
-                    DatabaseReference ref = db.getReference("users");
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
 
-                    // Check if user is signing in first time
-                    boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
-                    if (isNew)
-                        //if user is new set bookmarks to empty
-                        ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
+                FirebaseDatabase db = FirebaseDatabase.getInstance();
+                DatabaseReference ref = db.getReference("users");
 
-                    finish();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();
-                }
+                // Check if user is signing in first time
+                boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                if (isNew)
+                    ref.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("markeds").setValue("empty");
+
+                finish();
+            } else {
+                Toast.makeText(getApplicationContext(), "Giriş yapılamadı", Toast.LENGTH_SHORT).show();
             }
         });
     }

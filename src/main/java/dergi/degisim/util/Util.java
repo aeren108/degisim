@@ -52,7 +52,14 @@ public class Util {
 
     public static boolean checkLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        return user != null && !user.isAnonymous();
+        if (user == null)
+            return false;
+        else {
+            if (user.isAnonymous())
+                return false;
+            else
+                return true;
+        }
     }
 
     public void fetchData(String orderBy, final int pos) {
@@ -131,8 +138,10 @@ public class Util {
         q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
 
             public void onSuccess(QuerySnapshot documentSnapshots) {
-                if (pos >= documentSnapshots.getDocuments().size())
+                if (pos >= documentSnapshots.getDocuments().size()) {
+                    Log.d("sddsf","hamam böceği");
                     return;
+                }
 
                 DocumentSnapshot ds = documentSnapshots.getDocuments().get(pos);
 
@@ -188,12 +197,12 @@ public class Util {
                             //This shows that the article is already bookmarked
                             unsaveNews(n);
                             return;
+                        } else {
+                            if (dataListener != null)
+                                dataListener.onDataSaved(lastMarkings, n);
                         }
                         ref.child(usr.getUid()).child("markeds").setValue(lastMarkings);
                     }
-
-                    if (dataListener != null)
-                        dataListener.onDataSaved(lastMarkings, n);
                 }
 
             }
@@ -225,7 +234,6 @@ public class Util {
                 String buffer = (String) dataSnapshot.getValue();
                 buffer = buffer.replace(id+",", "");
                 lastMarkings = buffer;
-                Log.d("MARKED", "BUFFER: " + buffer);
 
                 ref.child(usr.getUid()).child("markeds").setValue(buffer);
 

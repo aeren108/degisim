@@ -118,6 +118,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }
         });
 
+//        auth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+//            @Override
+//            public void onSuccess(AuthResult authResult) {
+//                Log.d("AUTH", "Logged in anonymously");
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Log.d("AUTH", "Couldn't logged in anonymously");
+//            }
+//        });
+
         MainFragment fr = (MainFragment) pagerAdapter.getItem(pager.getCurrentItem());
         drawerNav.setNavigationItemSelectedListener(fr);
 
@@ -214,13 +226,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Fragment curFragment = pagerAdapter.getItem(pager.getCurrentItem());
 
         if (curFragment instanceof HomeFragment) {
-            if (((HomeFragment) curFragment).mode == 'c' ||
-                    ((HomeFragment) curFragment).mode == 'q') {
-
+            if (((HomeFragment) curFragment).mode == MainFragment.CATEGORY ||
+                ((HomeFragment) curFragment).mode == MainFragment.SEARCH) {
                 ((HomeFragment) curFragment).returnDefault();
             }
         } else if (curFragment instanceof WeeklyFragment) {
-            if (((WeeklyFragment) curFragment).catMode) {
+            if (((WeeklyFragment) curFragment).mode == MainFragment.CATEGORY) {
                 ((WeeklyFragment) curFragment).returnDefault();
             }
         } else

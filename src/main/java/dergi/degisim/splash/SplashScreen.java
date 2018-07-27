@@ -5,10 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -16,8 +24,13 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
+import dergi.degisim.fragment.MainFragment;
+import dergi.degisim.util.Util;
 
 public class SplashScreen extends AppCompatActivity {
     public static final int SPLASH_DURATION = 2000;
@@ -44,6 +57,24 @@ public class SplashScreen extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            if (Util.checkLoggedIn()) {
+                final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
+                final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+
+                assert usr != null;
+                ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        MainFragment.LAST_MARKINGS = Arrays.asList(dataSnapshot.getValue().toString().split(","));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             Query q = firestore.collection("haberler").orderBy("id", Query.Direction.DESCENDING);
             q.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {

@@ -28,9 +28,6 @@ public class HomeFragment extends MainFragment {
 
     public ArrayList<News> queryItems;
 
-    //d = default, c = category, q = search query
-    public char mode = 'd';
-
     public HomeFragment() {
         super();
     }
@@ -44,7 +41,7 @@ public class HomeFragment extends MainFragment {
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        queryItems = new ArrayList<News>();
+        queryItems = new ArrayList<>();
     }
 
     public void performSearchQuery(final String query) {
@@ -81,18 +78,18 @@ public class HomeFragment extends MainFragment {
             }
         });
 
-        mode = 'q';
+        mode = MainFragment.SEARCH;
     }
 
     @Override
     public void onRefresh() {
-        if (mode == 'c') {
+        if (mode == MainFragment.CATEGORY) {
             catItems.clear();
             adapter.setNews(catItems);
             for (int i = 0; i < LOAD_AMOUNT; i++) {
                 u.fetchCategory(currentCategory, "id", i);
             }
-        } else if (mode == 'd'){
+        } else if (mode == MainFragment.DEFAULT){
             items.clear();
             adapter.setNews(items);
             for (int i = 0; i < LOAD_AMOUNT; i++) {
@@ -106,16 +103,16 @@ public class HomeFragment extends MainFragment {
     @Override
     public void returnDefault() {
         adapter.setNews(items);
-        mode = 'd';
+        mode = MainFragment.DEFAULT;
 
         ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
     }
 
     @Override
     public void loadFeature(int pos) {
-        if (mode == 'c') {
+        if (mode == MainFragment.CATEGORY) {
             u.fetchCategory(currentCategory, "id", pos);
-        } else if (mode == 'd'){
+        } else if (mode == MainFragment.DEFAULT){
             u.fetchData("id", pos);
         }
     }
@@ -127,7 +124,7 @@ public class HomeFragment extends MainFragment {
 
     @Override
     public void onStartFeature() {
-        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim");
     }
 
     @Override
@@ -136,9 +133,9 @@ public class HomeFragment extends MainFragment {
 
         if (item.getItemId() == R.id.all) {
             adapter.setNews(items);
-            mode = 'd';
+            mode = MainFragment.DEFAULT;
 
-            ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim Dergisi");
+            ((MainActivity)getActivity()).getSupportActionBar().setTitle("Değişim");
 
             item.setChecked(true);
             return  true;
@@ -146,13 +143,13 @@ public class HomeFragment extends MainFragment {
             for (int id : CATEGORIES) {
                 if (item.getItemId() == id) {
                     String category = item.getTitle().toString().toLowerCase();
-
+                    Log.d("CATD", item.getTitle().toString());
                     catItems.clear();
 
                     for (int i = 0; i < LOAD_AMOUNT; i++)
                         u.fetchCategory(category, "id", i);
 
-                    mode = 'c';
+                    mode = MainFragment.CATEGORY;
                     ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
                     currentCategory = category;
                     adapter.setNews(catItems);
