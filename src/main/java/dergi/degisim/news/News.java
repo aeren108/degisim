@@ -7,7 +7,7 @@ public class News {
     private String title;
     private String content;
     private String author;
-    //private Date/String date;
+    private String date;
     private long id;
     private long read;
     private boolean isSaved;
@@ -75,6 +75,14 @@ public class News {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     @Override

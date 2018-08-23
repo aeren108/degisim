@@ -225,6 +225,8 @@ public class Util {
         intent.putExtra("content", itemList.get(pos).getContent());
         intent.putExtra("header", itemList.get(pos).getTitle());
         intent.putExtra("uri", itemList.get(pos).getUri());
+        intent.putExtra("date", itemList.get(pos).getDate());
+        intent.putExtra("author", itemList.get(pos).getAuthor());
         intent.putExtra("id", itemList.get(pos).getID());
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         activity.startActivity(intent);

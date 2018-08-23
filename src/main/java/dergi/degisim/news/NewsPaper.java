@@ -34,6 +34,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
     private LinearLayout ll;
     private ImageView img;
     private TextView title;
+    private TextView info;
     private ImageButton back;
     private FloatingActionButton fab;
 
@@ -42,6 +43,8 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
     private String content;
     private String header;
     private String uri;
+    private String date;
+    private String author;
     private long id;
 
     @Override
@@ -56,6 +59,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         ll = findViewById(R.id.wrapper);
         img = findViewById(R.id.toolbar_image);
         title = findViewById(R.id.title);
+        info = findViewById(R.id.info);
         back = findViewById(R.id.go_back_newspaper);
         fab = findViewById(R.id.floatingSaveButton);
         back.setOnClickListener(this);
@@ -64,6 +68,8 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         content = bundle.getString("content");
         header = bundle.getString("header");
         uri = bundle.getString("uri");
+        date = bundle.getString("date");
+        author = bundle.getString("author");
         id = bundle.getLong("id");
         fab.setOnClickListener(v -> {
             if (Util.checkLoggedIn()) {
@@ -79,7 +85,9 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
 
         prepareContent();
         loadImage();
+
         title.setText(header);
+        info.setText(author + " / " + date);
 
         FirebaseFirestore.getInstance().collection("haberler").document(String.valueOf(id)).get().addOnCompleteListener(task -> {
             long read = task.getResult().getLong("read");

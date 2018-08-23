@@ -56,8 +56,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginTop="5dp"
                 android:layout_marginRight="5dp"
-                android:src="@drawable/bookmark"
-                android:background="#803d3d3d"/>
+                android:src="@drawable/bookmark" />
 
         </RelativeLayout>
 

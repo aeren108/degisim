@@ -66,22 +66,22 @@ public class LoginActivity extends AppCompatActivity {
     private boolean checkCreditentials(String email, String pswd) {
         if (email.isEmpty() || pswd.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Alanları doldurun", Toast.LENGTH_SHORT).show();
-            return false;
+            return true;
         } else if (!email.contains("@")) {
             Toast.makeText(getApplicationContext(), "Geçerli bir e-posta girin", Toast.LENGTH_SHORT).show();
-            return false;
+            return true;
         } else if (email.split("@")[1].split(".").length != 2){
             Toast.makeText(getApplicationContext(), "Geçerli bir e-posta girin", Toast.LENGTH_SHORT).show();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private void login() {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
-        if (!checkCreditentials(em, pd))
+        if (checkCreditentials(em, pd))
             return;
 
         if (Util.checkLoggedIn())
@@ -100,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
         String em = email.getText().toString();
         String pd = pswd.getText().toString();
 
-        if (!checkCreditentials(em, pd))
+        if (checkCreditentials(em, pd))
             return;
 
         if (Util.checkLoggedIn())
@@ -127,23 +127,18 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = Auth.GoogleSignInApi.getSignInIntent(apiClient);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivityForResult(intent, RC_SIGN_IN);
-        Log.d("AUTH", "Intent started");
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d("AUTH", "Request code: " + requestCode);
-        Toast.makeText(getApplicationContext(), "RCODE: " + requestCode, Toast.LENGTH_SHORT).show();
 
         if (requestCode == RC_SIGN_IN) {
-            Toast.makeText(getApplicationContext(), "RC_CODE is true " + requestCode, Toast.LENGTH_SHORT).show();
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
             } catch (ApiException e) {
-                Toast.makeText(getApplicationContext(), "Failed to authenticate, error: "  + e ,Toast.LENGTH_SHORT).show();
                 Log.w("AUTH", "Google sign in failed", e);
             }
         }
@@ -151,13 +146,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Toast.makeText(getApplicationContext(), "Authenticating ", Toast.LENGTH_SHORT).show();
-        Log.d("AUTH", "authenticating..");
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         auth.signInWithCredential(credential).
         addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                Toast.makeText(getApplicationContext(), "Başarılı @ auth", Toast.LENGTH_SHORT).show();
                 FirebaseUser user = auth.getCurrentUser();
 
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);

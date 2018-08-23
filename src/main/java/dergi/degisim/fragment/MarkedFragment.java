@@ -54,7 +54,7 @@ public class MarkedFragment extends MainFragment {
     }
 
     public void loadMarkedNews(final int pos) {
-        if (!MainFragment.LAST_MARKINGS.equals("empty") || !MainFragment.LAST_MARKINGS.isEmpty()) {
+        if (!MainFragment.LAST_MARKINGS.isEmpty()) {
             if (frame != null && empty != null)
                 frame.removeView(empty);
             if (pos < MainFragment.LAST_MARKINGS.size()) {
@@ -149,5 +149,17 @@ public class MarkedFragment extends MainFragment {
 
         Log.d("fetch", "Position: " + pos + "th fetch: " + lastFetch);
         srl.setRefreshing(false);
+    }
+
+    @Override
+    public void onDataSaved(String lastMarkings, News n) {
+        super.onDataSaved(lastMarkings, n);
+        onRefresh();
+    }
+
+    @Override
+    public void onDataUnsaved(String lastMarkings, News n) {
+        super.onDataUnsaved(lastMarkings, n);
+        onRefresh();
     }
 }

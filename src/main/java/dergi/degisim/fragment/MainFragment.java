@@ -151,8 +151,6 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
             final FirebaseUser usr = auth.getCurrentUser();
             final DatabaseReference ref = db.getReference("users");
 
-            Log.d("TTTTA", usr.getUid());
-
             ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -231,7 +229,6 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         currentCategory = category;
         lastCatFetch = pos;
 
-        Log.i("cat_fetch", "Category " + category + " position: " + pos + "\n last category fetch: " + lastCatFetch);
         srl.setRefreshing(false);
     }
 
@@ -240,12 +237,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         MainFragment.LAST_MARKINGS = Arrays.asList(lastMarkings.split(","));
 
         Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi", Snackbar.LENGTH_SHORT);
-        snackbar.setAction("GERİ AL", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                u.unsaveNews(n);
-            }
-        });
+        snackbar.setAction("GERİ AL", v -> u.unsaveNews(n));
         snackbar.show();
     }
 
@@ -254,12 +246,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         MainFragment.LAST_MARKINGS = Arrays.asList(lastMarkings.split(","));
 
         Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedilenlerden çıkarıldı", Snackbar.LENGTH_SHORT);
-        snackbar.setAction("GERİ AL", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                u.saveNews(n);
-            }
-        });
+        snackbar.setAction("GERİ AL", v -> u.saveNews(n));
         snackbar.show();
     }
 
