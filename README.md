@@ -2,7 +2,7 @@
 
 Degisim is an Android app which is built for my school's magazine.<br>
 
-## Libraries Used
+## Built With
 
 - [Firebase](https://firebase.google.com)
 - [Picasso](https://square.github.io/picasso/)
