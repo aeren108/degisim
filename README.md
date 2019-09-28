@@ -10,3 +10,5 @@ Degisim is an Android app which is built for my school's magazine.<br>
 - [Slidr](https://github.com/r0adkll/Slidr)
 
 ## Screenshots
+
+![](https://github.com/aeren108/aeren108.github.io/blob/master/assets/img/degisimss.png?raw=true)
