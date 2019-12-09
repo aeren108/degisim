@@ -2,14 +2,13 @@
 package dergi.degisim.fragment;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -95,7 +94,7 @@ public class HomeFragment extends MainFragment {
                     catItems.clear();
 
                     for (int i = 0; i < LOAD_AMOUNT; i++)
-                        u.fetchCategory(category, "id", i);
+                        db.fetchCategory(category, "id", i);
 
                     mode = MainFragment.CATEGORY;
                     currentCategory = category;
@@ -116,13 +115,13 @@ public class HomeFragment extends MainFragment {
             catItems.clear();
             adapter.setNews(catItems);
             for (int i = 0; i < LOAD_AMOUNT; i++) {
-                u.fetchCategory(currentCategory, "id", i);
+                db.fetchCategory(currentCategory, "id", i);
             }
         } else if (mode == MainFragment.DEFAULT){
             items.clear();
             adapter.setNews(items);
             for (int i = 0; i < LOAD_AMOUNT; i++) {
-                u.fetchData("id", i);
+                db.fetchData("id", i);
             }
         } else {
             srl.setRefreshing(false);
@@ -140,9 +139,9 @@ public class HomeFragment extends MainFragment {
     @Override
     public void loadFeature(int pos) {
         if (mode == MainFragment.CATEGORY) {
-            u.fetchCategory(currentCategory, "id", pos);
+            db.fetchCategory(currentCategory, "id", pos);
         } else if (mode == MainFragment.DEFAULT){
-            u.fetchData("id", pos);
+            db.fetchData("id", pos);
         }
     }
 

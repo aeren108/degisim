@@ -2,8 +2,8 @@
 package dergi.degisim.adapter;
 
 import android.content.Context;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +33,7 @@ import java.util.List;
 import dergi.degisim.ItemClickListener;
 import dergi.degisim.R;
 import dergi.degisim.fragment.MainFragment;
-import dergi.degisim.util.Util;
+import dergi.degisim.db.Database;
 import dergi.degisim.news.News;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -75,7 +75,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             News n = (News) items.get(position);
             newsViewHolder.title.setText(n.getTitle());
 
-            if (Util.checkLoggedIn()) {
+            if (Database.checkLoggedIn()) {
                 final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
                 final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
 

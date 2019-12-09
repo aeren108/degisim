@@ -3,7 +3,7 @@ package dergi.degisim.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,7 +27,7 @@ import com.shobhitpuri.custombuttons.GoogleSignInButton;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.util.Util;
+import dergi.degisim.db.Database;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText email;
@@ -60,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).
         requestIdToken("1040413724850-0qvare5jk9qpv0vupqjmumkm5evclnrf.apps.googleusercontent.com").requestEmail().build();
 
-        apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, connectionResult -> Toast.makeText(getApplicationContext(), "Bağlantı başarısız oldu", Toast.LENGTH_LONG).show()).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
+        //apiClient = new GoogleApiClient.Builder(getApplicationContext()).enableAutoManage(this, connectionResult -> Toast.makeText(getApplicationContext(), "Bağlantı başarısız oldu", Toast.LENGTH_LONG).show()).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
     }
 
     private boolean checkCreditentials(String email, String pswd) {
@@ -84,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
         if (checkCreditentials(em, pd))
             return;
 
-        if (Util.checkLoggedIn())
+        if (Database.checkLoggedIn())
             auth.signOut();
 
         auth.signInWithEmailAndPassword(em, pd).addOnSuccessListener(authResult -> {
@@ -103,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
         if (checkCreditentials(em, pd))
             return;
 
-        if (Util.checkLoggedIn())
+        if (Database.checkLoggedIn())
             auth.signOut();
 
         auth.createUserWithEmailAndPassword(em, pd).addOnSuccessListener(authResult -> {

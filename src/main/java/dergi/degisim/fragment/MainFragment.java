@@ -3,21 +3,20 @@ package dergi.degisim.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.fragment.app.Fragment;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,16 +31,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
-import dergi.degisim.ItemClickListener;
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.adapter.RecyclerAdapter;
 import dergi.degisim.auth.LoginActivity;
 import dergi.degisim.news.News;
-import dergi.degisim.util.DataListener;
-import dergi.degisim.util.Util;
+import dergi.degisim.db.DataListener;
+import dergi.degisim.db.Database;
 
 import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL;
 
@@ -49,7 +46,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
                                                                NavigationView.OnNavigationItemSelectedListener {
 
     protected FirebaseFirestore fs = FirebaseFirestore.getInstance();
-    protected FirebaseDatabase db = FirebaseDatabase.getInstance();
+    protected FirebaseDatabase fd = FirebaseDatabase.getInstance();
     protected FirebaseAuth auth = FirebaseAuth.getInstance();
 
     protected List<News> items;
@@ -63,7 +60,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     protected LinearLayoutManager m;
     protected SwipeRefreshLayout srl;
 
-    protected Util u;
+    protected Database db;
 
     protected int lastFetch;
     protected int lastCatFetch;
@@ -84,7 +81,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     public static List<String> LAST_MARKINGS;
 
     public MainFragment() {
-        u = new Util(this);
+        db = new Database(this);
     }
 
     @Override
@@ -106,11 +103,11 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         m = new LinearLayoutManager(getContext());
         rv = view.findViewById(R.id.list);
         adapter = new RecyclerAdapter(getActivity(), (v, pos) -> { //LIST ITEMS CLICK LISTENER
-            Util.openNewspaper(getActivity(), adapter.getNews(), pos);
+            Database.openNewspaper(getActivity(), adapter.getNews(), pos);
         }, (v, pos) -> { //SAVE BUTTON LISTENER
             // Just calling saveNews() func. because it checks if news is bookmarkde or not,
             // if news is already bookmarked it calls unsave()
-            u.saveNews(adapter.getNews().get(adapter.getRealPosition(pos)));
+            db.saveNews(adapter.getNews().get(adapter.getRealPosition(pos)));
         });
 
         //SCROLL LISTENER
@@ -145,11 +142,11 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         });
 
         //if logged in check bookmarked news
-        if (Util.checkLoggedIn()) {
+        if (Database.checkLoggedIn()) {
             MainFragment.ID = auth.getCurrentUser().getUid();
 
             final FirebaseUser usr = auth.getCurrentUser();
-            final DatabaseReference ref = db.getReference("users");
+            final DatabaseReference ref = fd.getReference("users");
 
             ref.child(usr.getUid()).child("markeds").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -178,7 +175,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
         if (item.getItemId() == R.id.login) {
-            if (!Util.checkLoggedIn()) {
+            if (!Database.checkLoggedIn()) {
                 Intent intent = new Intent(getContext(), LoginActivity.class);
                 startActivity(intent);
             } else {
@@ -237,7 +234,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         MainFragment.LAST_MARKINGS = Arrays.asList(lastMarkings.split(","));
 
         Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedildi", Snackbar.LENGTH_SHORT);
-        snackbar.setAction("GERİ AL", v -> u.unsaveNews(n));
+        snackbar.setAction("GERİ AL", v -> db.unsaveNews(n));
         snackbar.show();
     }
 
@@ -246,7 +243,7 @@ public abstract class MainFragment extends Fragment implements DataListener, Swi
         MainFragment.LAST_MARKINGS = Arrays.asList(lastMarkings.split(","));
 
         Snackbar snackbar = Snackbar.make(getView(), "Haber kaydedilenlerden çıkarıldı", Snackbar.LENGTH_SHORT);
-        snackbar.setAction("GERİ AL", v -> u.saveNews(n));
+        snackbar.setAction("GERİ AL", v -> db.saveNews(n));
         snackbar.show();
     }
 

@@ -1,9 +1,9 @@
 // -*- @author aeren_pozitif  -*- //
-package dergi.degisim.util;
+package dergi.degisim.db;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -27,7 +27,7 @@ import java.util.List;
 import dergi.degisim.news.News;
 import dergi.degisim.news.NewsPaper;
 
-public class Util {
+public class Database {
     private DataListener dataListener;
 
     private final FirebaseFirestore fs;
@@ -36,13 +36,13 @@ public class Util {
 
     private String lastMarkings;
 
-    public Util() {
+    public Database() {
         fs = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
     }
 
-    public Util(DataListener dataListener) {
+    public Database(DataListener dataListener) {
         fs = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();

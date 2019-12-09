@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,12 +25,11 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
 import dergi.degisim.fragment.MainFragment;
-import dergi.degisim.util.Util;
+import dergi.degisim.db.Database;
 
 public class SplashScreen extends AppCompatActivity {
     public static final int SPLASH_DURATION = 2000;
@@ -57,7 +56,7 @@ public class SplashScreen extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (Util.checkLoggedIn()) {
+            if (Database.checkLoggedIn()) {
                 final FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
                 final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
 

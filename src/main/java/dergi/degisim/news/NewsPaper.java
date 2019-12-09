@@ -1,13 +1,12 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.news;
 
-import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
@@ -27,8 +26,8 @@ import java.util.Arrays;
 
 import dergi.degisim.R;
 import dergi.degisim.fragment.MainFragment;
-import dergi.degisim.util.DataListener;
-import dergi.degisim.util.Util;
+import dergi.degisim.db.DataListener;
+import dergi.degisim.db.Database;
 
 public class NewsPaper extends AppCompatActivity implements View.OnClickListener, DataListener {
     private LinearLayout ll;
@@ -38,7 +37,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
     private ImageButton back;
     private FloatingActionButton fab;
 
-    private Util u;
+    private Database db;
 
     private String content;
     private String header;
@@ -55,7 +54,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         setSupportActionBar(toolbar);
         Slidr.attach(this);
 
-        u = new Util(this);
+        db = new Database(this);
         ll = findViewById(R.id.wrapper);
         img = findViewById(R.id.toolbar_image);
         title = findViewById(R.id.title);
@@ -72,9 +71,9 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         author = bundle.getString("author");
         id = bundle.getLong("id");
         fab.setOnClickListener(v -> {
-            if (Util.checkLoggedIn()) {
+            if (Database.checkLoggedIn()) {
                 News n = new News(id, uri, header, content);
-                u.saveNews(n);
+                db.saveNews(n);
             }
         });
 
@@ -163,7 +162,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         snackbar.setAction("GERİ AL", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                u.unsaveNews(n);
+                db.unsaveNews(n);
             }
         });
         snackbar.show();
@@ -179,7 +178,7 @@ public class NewsPaper extends AppCompatActivity implements View.OnClickListener
         snackbar.setAction("GERİ AL", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                u.saveNews(n);
+                db.saveNews(n);
             }
         });
         snackbar.show();

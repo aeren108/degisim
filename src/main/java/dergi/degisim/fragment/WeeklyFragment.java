@@ -1,24 +1,22 @@
 // -*- @author aeren_pozitif  -*- //
 package dergi.degisim.fragment;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import dergi.degisim.MainActivity;
 import dergi.degisim.R;
-import dergi.degisim.util.Util;
+import dergi.degisim.db.Database;
 
 public class WeeklyFragment extends MainFragment {
 
     public WeeklyFragment() {
-        u = new Util(this);
+        db = new Database(this);
     }
 
     @Override
@@ -31,7 +29,7 @@ public class WeeklyFragment extends MainFragment {
         super.onViewCreated(view, savedInstanceState);
 
         for (int i = 0; i < MainFragment.NEWS_AMOUNT; i++) {
-            u.fetchData("read", i);
+            db.fetchData("read", i);
         }
     }
 
@@ -41,13 +39,13 @@ public class WeeklyFragment extends MainFragment {
             catItems.clear();
             adapter.setNews(catItems);
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++) {
-                u.fetchCategory(currentCategory, "read", i);
+                db.fetchCategory(currentCategory, "read", i);
             }
         } else if (mode == MainFragment.DEFAULT) {
             items.clear();
             adapter.setNews(items);
             for (int i = 0; i < MainFragment.LOAD_AMOUNT; i++) {
-                u.fetchData("read", i);
+                db.fetchData("read", i);
             }
         }
     }
@@ -71,7 +69,7 @@ public class WeeklyFragment extends MainFragment {
                     catItems.clear();
 
                     for (int i = 0; i < LOAD_AMOUNT; i++)
-                        u.fetchCategory(category, "read", i);
+                        db.fetchCategory(category, "read", i);
 
                     mode = MainFragment.CATEGORY;
                     ((MainActivity) getActivity()).getSupportActionBar().setTitle(item.getTitle().toString());
@@ -97,9 +95,9 @@ public class WeeklyFragment extends MainFragment {
     @Override
     public void loadFeature(int pos) {
         if (mode == MainFragment.CATEGORY) {
-            u.fetchCategory(currentCategory, "read", pos);
+            db.fetchCategory(currentCategory, "read", pos);
         } else if (mode == MainFragment.DEFAULT) {
-            u.fetchData("read", pos);
+            db.fetchData("read", pos);
         }
     }
 
