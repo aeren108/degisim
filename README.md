@@ -1,6 +1,6 @@
 # Degisim
 
-Degisim is an Android app which is built for my school's magazine.<br>
+Degisim is an Android app which I built for my school's magazine.<br>
 
 ## Built With
 
